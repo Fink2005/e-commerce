@@ -65,19 +65,19 @@ export default async function middleware(
   }
 
   // Handle authentication logic
-  if (isProtectedRoute(pathname)) {
-    if (!isAuthenticated) {
-      // Redirect to login if not authenticated
-      const loginUrl = new URL('/login', request.url);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
+  // if (isProtectedRoute(pathname)) {
+  //   if (!isAuthenticated) {
+  //     // Redirect to login if not authenticated
+  //     const loginUrl = new URL('/login', request.url);
+  //     return NextResponse.redirect(loginUrl);
+  //   }
+  // }
 
-  // Redirect authenticated users away from auth/welcome pages
-  if (((isAuthPage(pathname)) && isAuthenticated) || (isWelcomePage(pathname) && isAuthenticated)) {
-    const homeUrl = new URL('/', request.url);
-    return NextResponse.redirect(homeUrl);
-  }
+  // // Redirect authenticated users away from auth/welcome pages
+  // if (((isAuthPage(pathname)) && isAuthenticated) || (isWelcomePage(pathname) && isAuthenticated)) {
+  //   const homeUrl = new URL('/', request.url);
+  //   return NextResponse.redirect(homeUrl);
+  // }
 
   // Apply i18n routing
   return handleI18nRouting(requestWithHeaders);

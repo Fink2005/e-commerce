@@ -7,6 +7,10 @@ const page = () => {
   return (
     <div className="min-h-screen bg-home">
       <Header />
+      <p className='text-white text-center'>
+      xin chao
+
+      </p>
     </div>
   );
 };

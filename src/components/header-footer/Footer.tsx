@@ -39,7 +39,7 @@ export function Footer() {
   const pathName = usePathname();
   return (
     <footer
-      className="absolute bottom-0 w-full footer"
+      className="absolute bottom-0 w-full flex "
       style={{
         paddingBottom: 'env(safe-area-inset-bottom)'
       }}
@@ -48,7 +48,7 @@ export function Footer() {
         tabBar.map((item) => {
           const Icon = item.icon;
           return (
-            <Link href={item.to} key={item.title} className={`footer-items ${pathName === item.to ? '' : 'opacity-50'}`}>
+            <Link href={item.to} key={item.title} className={` flex-1 flex justify-center flex-col items-center space-y-2 ${pathName === item.to ? '' : 'opacity-50'}`}>
               <Icon />
               <span
                 className="text-white font-[500] text-[0.5625rem]"
