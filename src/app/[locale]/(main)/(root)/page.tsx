@@ -1,4 +1,4 @@
-import { Header } from '@/components/header-footer/Header';
+import VoucherCarousel from '@/components/home/VoucherCarousel';
 
 const page = () => {
   // const headersList = await headers();
@@ -6,11 +6,7 @@ const page = () => {
   // console.log(pathName);
   return (
     <div className="min-h-screen bg-home">
-      <Header />
-      <p className='text-white text-center'>
-      xin chao
-
-      </p>
+      <VoucherCarousel />
     </div>
   );
 };
