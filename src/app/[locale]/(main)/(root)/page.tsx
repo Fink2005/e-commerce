@@ -1,12 +1,11 @@
+import CategoryBrowser from '@/components/home/CategoryBrowser';
 import VoucherCarousel from '@/components/home/VoucherCarousel';
 
 const page = () => {
-  // const headersList = await headers();
-  // const pathName = headersList.get('x-pathname');
-  // console.log(pathName);
   return (
-    <div className="min-h-screen bg-home">
+    <div className="min-h-screen w-full max-w-md mx-auto p-4 flex flex-col space-y-2">
       <VoucherCarousel />
+      <CategoryBrowser />
     </div>
   );
 };

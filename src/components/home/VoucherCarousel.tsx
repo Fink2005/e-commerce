@@ -49,7 +49,7 @@ const VoucherCarousel = () => {
   }, [emblaApi]);
 
   return (
-    <div className="w-full max-w-md mx-auto p-4">
+    <div>
       <Carousel
         plugins={[plugin.current]}
         setApi={setEmblaApi}
@@ -64,7 +64,7 @@ const VoucherCarousel = () => {
             <CarouselItem key={item.id}>
               <Card className="border-0 shadow-lg py-0 overflow-hidden">
                 <CardContent className="p-0">
-                  <Image src={item.imageURL} alt={`Voucher ${item.id}`} width={500} height={500} />
+                  <Image src={item.imageURL} alt={`Voucher ${item.id}`} width={500} height={1200} priority={true} />
                 </CardContent>
               </Card>
             </CarouselItem>
