@@ -46,8 +46,8 @@ const CategoryBrowser = () => {
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold text-gray-900">Browse By Category</h2>
           <div className="flex items-center gap-2">
-            <CarouselPrevious className="static translate-y-0 h-8 w-8 cursor-pointer" variant="ghost" />
-            <CarouselNext className="static translate-y-0 h-8 w-8 cursor-pointer" variant="ghost" />
+            <CarouselPrevious className="static translate-y-0 h-8 w-8 cursor-pointer" variant="secondary" />
+            <CarouselNext className="static translate-y-0 h-8 w-8 cursor-pointer" variant="secondary" />
           </div>
         </div>
         <CarouselContent className="-ml-2 md:-ml-4 mt-3">
