@@ -1,4 +1,3 @@
-import { Footer } from '@/components/header-footer/Footer';
 import Header from '@/components/header-footer/Header';
 
 export default async function Layout(props: {
@@ -9,7 +8,7 @@ export default async function Layout(props: {
     <main className="min-h-screen overflow-y-auto">
       <Header />
       {props.children}
-      <Footer />
+      {/* <Footer /> */}
     </main>
   );
 }

@@ -16,6 +16,18 @@ const baseConfig: NextConfig = {
         port: '',
         pathname: '/project_modules/max_3840_webp/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'i.pinimg.com',
+        port: '',
+        pathname: '/736x/f2/3a/38/f23a38384fb8ba462c37e87281bffbd0.jpg',
+      },
+      {
+        protocol: 'https',
+        hostname: 'shopflix.co.tz',
+        port: '',
+        pathname: '/public/uploads/all/WdQAdls0De2TefCYY3vLZWTaJH9Jm7LMDhEbPkTl.jpg',
+      }
     ],
   },
 };

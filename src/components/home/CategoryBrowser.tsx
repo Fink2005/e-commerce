@@ -41,7 +41,7 @@ const CategoryBrowser = () => {
         }}
         className="w-full"
       >
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mt-1">
           <h2 className="text-lg font-bold text-gray-900">Browse By Category</h2>
           <div className="flex items-center gap-4">
             <CarouselPrevious className="static translate-y-0 cursor-pointer h-7 w-7" variant="secondary" />
@@ -53,7 +53,7 @@ const CategoryBrowser = () => {
             const IconComponent = category.icon;
 
             return (
-              <CarouselItem key={category.id} className="pl-2 basis-1/2">
+              <CarouselItem key={category.id} className="basis-1/2">
                 <Card
                   className={`
                     cursor-pointer transition-all duration-200 border-1 shadow-none
