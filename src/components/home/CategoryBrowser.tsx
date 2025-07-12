@@ -1,6 +1,7 @@
 import { Headphones, Monitor, Smartphone, Tablet } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
+import SectionBadge from './SectionBadge';
 
 const CategoryBrowser = () => {
   const categories = [
@@ -32,10 +33,7 @@ const CategoryBrowser = () => {
 
   return (
     <div>
-      <div className="flex items-center gap-2">
-        <div className="w-2 bg-red-500 rounded-full">&nbsp;</div>
-        <p className="text-red-500 text-sm font-medium">Categories</p>
-      </div>
+      <SectionBadge name="Categories" />
       <Carousel
         opts={{
           align: 'start',
@@ -44,7 +42,7 @@ const CategoryBrowser = () => {
         className="w-full"
       >
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900">Browse By Category</h2>
+          <h2 className="text-lg font-bold text-gray-900">Browse By Category</h2>
           <div className="flex items-center gap-4">
             <CarouselPrevious className="static translate-y-0 cursor-pointer h-7 w-7" variant="secondary" />
             <CarouselNext className="static translate-y-0 cursor-pointer h-7 w-7" variant="secondary" />
