@@ -33,7 +33,7 @@ const CategoryBrowser = () => {
   return (
     <div>
       <div className="flex items-center gap-2">
-        <div className="w-2 h-6 bg-red-500 rounded-full">&nbsp;</div>
+        <div className="w-2 bg-red-500 rounded-full">&nbsp;</div>
         <p className="text-red-500 text-sm font-medium">Categories</p>
       </div>
       <Carousel
@@ -45,9 +45,9 @@ const CategoryBrowser = () => {
       >
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold text-gray-900">Browse By Category</h2>
-          <div className="flex items-center gap-2">
-            <CarouselPrevious className="static translate-y-0 h-8 w-8 cursor-pointer" variant="secondary" />
-            <CarouselNext className="static translate-y-0 h-8 w-8 cursor-pointer" variant="secondary" />
+          <div className="flex items-center gap-4">
+            <CarouselPrevious className="static translate-y-0 cursor-pointer h-7 w-7" variant="secondary" />
+            <CarouselNext className="static translate-y-0 cursor-pointer h-7 w-7" variant="secondary" />
           </div>
         </div>
         <CarouselContent className="-ml-2 md:-ml-4 mt-3">
@@ -55,17 +55,17 @@ const CategoryBrowser = () => {
             const IconComponent = category.icon;
 
             return (
-              <CarouselItem key={category.id} className="pl-2 md:pl-4 basis-1/2">
+              <CarouselItem key={category.id} className="pl-2 basis-1/2">
                 <Card
                   className={`
-                    cursor-pointer transition-all duration-200 border-2
+                    cursor-pointer transition-all duration-200 border-1 shadow-none
                     ${category.isActive
-                ? 'bg-red-500 border-red-500 text-white hover:bg-red-600'
-                : 'bg-white border-gray-200 hover:border-gray-300'
+                ? 'bg-red-500 border-red-600 text-white'
+                : 'bg-white border-gray-400'
               }
                   `}
                 >
-                  <CardContent className="p-6">
+                  <CardContent className="p-5">
                     <div className="flex flex-col items-center gap-4">
                       <div className={`p-3 rounded-lg ${category.isActive ? 'bg-red-600' : 'bg-gray-100'}`}>
                         <IconComponent className={`h-8 w-8 ${category.isActive ? 'text-white' : 'text-gray-700'}`} />
