@@ -64,7 +64,7 @@ const VoucherCarousel = () => {
             <CarouselItem key={item.id}>
               <Card className="border-0 shadow-lg py-0 overflow-hidden">
                 <CardContent className="p-0">
-                  <Image src={item.imageURL} alt={`Voucher ${item.id}`} width={500} height={1200} priority={true} />
+                  <Image src={item.imageURL} alt={`Voucher ${item.id}`} width={500} height={280} priority={true} />
                 </CardContent>
               </Card>
             </CarouselItem>
