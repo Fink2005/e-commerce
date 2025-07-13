@@ -79,7 +79,7 @@ const VoucherCarousel = () => {
               onClick={() => {
                 emblaApi?.scrollTo(item.id);
               }}
-              className={`h-2 w-2 transition-colors duration-300 cursor-pointer ${
+              className={`size-2 transition-colors duration-300 cursor-pointer ${
                 selectedIndex === item.id ? 'bg-red-500 border-2 border-solid border-white' : 'bg-gray-400'
               }`}
             />

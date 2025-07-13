@@ -44,8 +44,8 @@ const CategoryBrowser = () => {
         <div className="flex justify-between items-center mt-1">
           <h2 className="text-lg font-bold text-gray-900">Browse By Category</h2>
           <div className="flex items-center gap-4">
-            <CarouselPrevious className="static translate-y-0 cursor-pointer h-7 w-7" variant="secondary" />
-            <CarouselNext className="static translate-y-0 cursor-pointer h-7 w-7" variant="secondary" />
+            <CarouselPrevious className="static translate-y-0 cursor-pointer size-7" iconClassName="size-4" strokeWidth={3} variant="secondary" />
+            <CarouselNext className="static translate-y-0 cursor-pointer size-7" iconClassName="size-4" strokeWidth={3} variant="secondary" />
           </div>
         </div>
         <CarouselContent className="-ml-2 md:-ml-4 mt-3">
@@ -66,7 +66,7 @@ const CategoryBrowser = () => {
                   <CardContent className="p-5">
                     <div className="flex flex-col items-center gap-4">
                       <div className={`p-3 rounded-lg ${category.isActive ? 'bg-red-600' : 'bg-gray-100'}`}>
-                        <IconComponent className={`h-8 w-8 ${category.isActive ? 'text-white' : 'text-gray-700'}`} />
+                        <IconComponent className={`size-8 ${category.isActive ? 'text-white' : 'text-gray-700'}`} />
                       </div>
                       <span className="font-medium text-sm">{category.name}</span>
                     </div>

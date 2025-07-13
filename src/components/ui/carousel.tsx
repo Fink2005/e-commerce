@@ -29,6 +29,11 @@ type CarouselContextProps = {
   canScrollNext: boolean;
 } & CarouselProps;
 
+type IconProps = {
+  iconClassName?: string;
+  strokeWidth?: number;
+};
+
 const CarouselContext = React.createContext<CarouselContextProps | null>(null);
 
 function useCarousel() {
@@ -180,8 +185,10 @@ function CarouselPrevious({
   className,
   variant = 'outline',
   size = 'icon',
+  iconClassName,
+  strokeWidth,
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: React.ComponentProps<typeof Button> & IconProps) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel();
 
   return (
@@ -200,7 +207,7 @@ function CarouselPrevious({
       onClick={scrollPrev}
       {...props}
     >
-      <ArrowLeft className="h-4 w-4" strokeWidth={3} />
+      <ArrowLeft className={iconClassName} strokeWidth={strokeWidth} />
       <span className="sr-only">Previous slide</span>
     </Button>
   );
@@ -210,8 +217,10 @@ function CarouselNext({
   className,
   variant = 'outline',
   size = 'icon',
+  iconClassName,
+  strokeWidth,
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: React.ComponentProps<typeof Button> & IconProps) {
   const { orientation, scrollNext, canScrollNext } = useCarousel();
 
   return (
@@ -230,7 +239,7 @@ function CarouselNext({
       onClick={scrollNext}
       {...props}
     >
-      <ArrowRight className="h-4 w-4" strokeWidth={3} />
+      <ArrowRight className={iconClassName} strokeWidth={strokeWidth} />
       <span className="sr-only">Next slide</span>
     </Button>
   );

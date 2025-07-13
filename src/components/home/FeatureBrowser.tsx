@@ -16,9 +16,9 @@ const FeatureBrowser = () => {
       />
       <div className="flex flex-col items-center justify-center bg-white p-6">
         <div className="relative mb-6">
-          <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
-            <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center">
-              <Truck className="w-8 h-8 text-white" />
+          <div className="size-24 bg-gray-200 rounded-full flex items-center justify-center">
+            <div className="size-16 bg-black rounded-full flex items-center justify-center">
+              <Truck className="size-8 text-white" />
             </div>
           </div>
         </div>

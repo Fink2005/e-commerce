@@ -14,19 +14,19 @@ const baseConfig: NextConfig = {
         protocol: 'https',
         hostname: 'mir-s3-cdn-cf.behance.net',
         port: '',
-        pathname: '/project_modules/max_3840_webp/**',
+        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'i.pinimg.com',
         port: '',
-        pathname: '/736x/f2/3a/38/f23a38384fb8ba462c37e87281bffbd0.jpg',
+        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'shopflix.co.tz',
         port: '',
-        pathname: '/public/uploads/all/WdQAdls0De2TefCYY3vLZWTaJH9Jm7LMDhEbPkTl.jpg',
+        pathname: '/**',
       }
     ],
   },
