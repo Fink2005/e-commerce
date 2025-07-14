@@ -1,5 +1,6 @@
 import CategoryBrowser from '@/components/home/CategoryBrowser';
 import FeatureBrowser from '@/components/home/FeatureBrowser';
+import ProductList from '@/components/home/ProductList';
 import VoucherCarousel from '@/components/home/VoucherCarousel';
 
 const page = () => {
@@ -8,6 +9,7 @@ const page = () => {
       <VoucherCarousel />
       <CategoryBrowser />
       <FeatureBrowser />
+			<ProductList />
     </div>
   );
 };
