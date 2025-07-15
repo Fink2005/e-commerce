@@ -1,5 +1,3 @@
-import { inter } from '@/app/fonts/inter';
-import { poppins } from '@/app/fonts/poppins';
 import React from 'react';
 
 const
@@ -7,7 +5,7 @@ const
     children: React.ReactNode;
   }) => {
     return (
-      <main className={`flex flex-col items-center ${inter.variable} ${poppins.variable}`}>
+      <main className="flex flex-col items-center bg-white">
         <div className="w-full relative sm:max-w-[450px] sm:border-x border-dashed border-black">
           {props.children}
         </div>

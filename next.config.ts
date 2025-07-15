@@ -8,6 +8,28 @@ const baseConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   serverExternalPackages: ['@electric-sql/pglite'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'mir-s3-cdn-cf.behance.net',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.pinimg.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'shopflix.co.tz',
+        port: '',
+        pathname: '/**',
+      }
+    ],
+  },
 };
 
 const config = createNextIntlPlugin('./src/libs/i18n.ts')(baseConfig);
