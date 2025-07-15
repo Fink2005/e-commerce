@@ -25,7 +25,7 @@ const ProductList = () => {
       <h2 className="text-lg font-bold text-gray-900 mt-1 mb-3">Explore Our Products</h2>
         <div className="grid grid-cols-2 gap-4">
           {products.map((product) => (
-						<Card className="overflow-hidden transition-shadow duration-200 h-fit max-w-sm mx-auto pb-4 pt-0">
+						<Card className="overflow-hidden transition-shadow duration-200 shadow-none border-0 h-fit max-w-sm mx-auto pb-4 pt-0">
 						{/* Product Image Section */}
 						<div className="relative bg-gray-50">
 							<div className="absolute top-4 right-4 flex flex-col gap-2">
@@ -68,6 +68,11 @@ const ProductList = () => {
 						</Card>
           ))}
         </div>
+				<div className='mt-6 mb-4 flex justify-center'>
+					<Button className="bg-red-500 text-white hover:bg-red-600 px-16 py-6">
+						Load More
+					</Button>
+				</div>
       </div>
     
   );
