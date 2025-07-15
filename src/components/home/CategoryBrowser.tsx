@@ -48,7 +48,7 @@ const CategoryBrowser = () => {
             <CarouselNext className="static translate-y-0 cursor-pointer size-7" iconClassName="size-4" strokeWidth={3} variant="secondary" />
           </div>
         </div>
-        <CarouselContent className="-ml-2 md:-ml-4 mt-3">
+        <CarouselContent className="mt-2">
           {categories.map((category) => {
             const IconComponent = category.icon;
 
