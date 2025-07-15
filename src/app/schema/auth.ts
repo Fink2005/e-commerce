@@ -54,13 +54,13 @@ export const registrationSchema = z.object({
   confirmPassword: z
     .string()
     .min(1, 'Please confirm your password')
-})
-  .refine(
-    data => data.password === data.confirmPassword,
-    {
-      message: 'Pasword doesn\'t match, please try again'
-    }
-  );
+}).refine(
+  data => data.password === data.confirmPassword,
+  {
+    message: 'Password doesn\'t match, please try again',
+    path: ['confirmPassword']
+  }
+);
 
 // Forgot Password Schema
 export const forgotPasswordSchema = z.object({
@@ -73,13 +73,12 @@ export const resetPasswordSchema = z.object({
   confirmPassword: z
     .string()
     .min(1, 'Please confirm your password')
-})
-  .refine(
-    data => data.password === data.confirmPassword,
-    {
-      message: 'Password doesn\'t match, please try again'
-    }
-  );
+}).refine(
+  data => data.password === data.confirmPassword,
+  {
+    message: 'Password doesn\'t match, please try again'
+  }
+);
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registrationSchema>;
@@ -109,12 +108,4 @@ export const formatZodErrors = (errors: z.ZodError) => {
     acc[field] = issue.message;
     return acc;
   }, {} as Record<string, string>);
-};
-
-export const validateLoginForm = (data: unknown) => {
-  return loginSchema.safeParse(data);
-};
-
-export const validateRegistrationForm = (data: unknown) => {
-  return registrationSchema.safeParse(data);
 };

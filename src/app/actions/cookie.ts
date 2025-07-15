@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 
-export async function createCookie({ name, value }: { name: string; value: any }) {
+export async function createCookie({ name, value, maxAge }: { name: string; value: any; maxAge: number }) {
   const cookieStore = await cookies();
   cookieStore.set({
     name,
@@ -11,40 +11,7 @@ export async function createCookie({ name, value }: { name: string; value: any }
     path: '/',
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-  });
-}
-
-export async function createAuthCookies(authData: {
-  user: any;
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-}) {
-  const cookieStore = await cookies();
-
-  // Store user data and access token
-  cookieStore.set({
-    name: 'authData',
-    value: JSON.stringify({
-      user: authData.user,
-      accessToken: authData.accessToken,
-    }),
-    httpOnly: true,
-    path: '/',
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: authData.expiresIn,
-  });
-
-  // Store refresh token separately with longer expiration
-  cookieStore.set({
-    name: 'refreshToken',
-    value: authData.refreshToken,
-    httpOnly: true,
-    path: '/',
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    ...(maxAge && { maxAge }),
   });
 }
 
