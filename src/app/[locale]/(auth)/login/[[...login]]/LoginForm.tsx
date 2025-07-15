@@ -1,23 +1,101 @@
-const LoginForm = () => {
-  return (
-    <div className="bg-black/45 p-8 rounded-lg space-y-4 text-white">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl">Log in to CheapDeals</h2>
-        <p className="text-lg">Enter your details below</p>
-      </div>
-      <form action="" className="flex flex-col text-white space-y-4">
-        <input type="text" name="" id="" placeholder="Email or Phone Number" className="border-b-1 border-[#FAFAFA] text-xl w-full p-2 focus:outline-0" />
-        <input type="password" name="password" id="" placeholder="Password" className="border-b-1 border-[#FAFAFA] text-xl w-full p-2" />
-        <span className="ml-auto underline">Forget Password?</span>
+'use client';
 
-        <button type="submit" className="text-2xl py-2 bg-[#DB4444] rounded-md">Log In</button>
-      </form>
-      <div className="w-fit mx-auto">
-        <span>
-          Doesn't have account?
-          <a href="" className="ml-4 underline text-[#FAFAFA]">Sign up</a>
-        </span>
-      </div>
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useState } from 'react';
+
+const LoginForm = () => {
+  const [formData, setFormData] = useState({
+    emailOrPhone: '',
+    password: ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleLogin = () => {
+    console.log('Login submitted:', formData);
+  };
+
+  return (
+    <div className="w-full flex items-center justify-center p-4">
+      <Card className="w-full bg-black/50 border-gray-700 backdrop-blur-sm">
+        <CardContent className="space-y-6">
+          <div className="space-y-2 text-center">
+            <h3 className="text-xl font-semibold text-white">
+              Log in to Exclusive
+            </h3>
+            <p className="text-gray-400 text-sm">
+              Enter your details below
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="emailOrPhone" className="sr-only">
+                Email or Phone Number
+              </Label>
+              <Input
+                id="emailOrPhone"
+                name="emailOrPhone"
+                type="text"
+                placeholder="Email or Phone Number"
+                value={formData.emailOrPhone}
+                onChange={handleInputChange}
+                className="bg-gray-800/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-red-500 focus:ring-red-500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="sr-only">
+                Password
+              </Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className="bg-gray-800/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-red-500 focus:ring-red-500"
+              />
+            </div>
+
+            <div className="text-right">
+              <button
+                type="button"
+                className="text-gray-400 hover:text-white text-sm underline underline-offset-4 transition-colors"
+              >
+                Forget Password?
+              </button>
+            </div>
+
+            <Button
+              onClick={handleLogin}
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-md font-medium transition-colors"
+            >
+              Log in
+            </Button>
+          </div>
+
+          <div className="text-center text-gray-400">
+            <span className="text-sm">Doesn't have account? </span>
+            <button
+              type="button"
+              className="text-white hover:text-gray-300 text-sm underline underline-offset-4 transition-colors font-medium"
+            >
+              Sign up
+            </button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

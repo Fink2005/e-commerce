@@ -1,17 +1,13 @@
-import LoginForm from './LoginForm';
+import AuthForm from '@/components/AuthForm';
 
 const login = () => {
   return (
-    <div className="flex flex-col items-center relative px-8 h-screen">
-      <div className="space-y-4 w-full my-auto">
-        <div className="flex flex-col items-center text-white">
-          <h1 className="text-4xl font-bold">CheapDeals</h1>
-          <p className="text-2xl">Your shopping choice</p>
-        </div>
-        <div className="bg-login-card">
-          <LoginForm />
-        </div>
+    <div className="flex flex-col min-h-screen justify-center items-center relative px-8 h-screen bg-login bg-gradient-to-br from-black via-gray-700 to-black via-50%">
+      <div className="text-center text-white space-y-2">
+        <h1 className="text-3xl font-bold font-inter">CheapDeals</h1>
+        <p className="text-base font-poppins">Your shopping choice</p>
       </div>
+      <AuthForm mode="login" />
     </div>
   );
 };
