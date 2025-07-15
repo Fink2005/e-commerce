@@ -1,10 +1,18 @@
-import { Headphones, Monitor, Smartphone, Tablet } from 'lucide-react';
+'use client';
+import { Headphones, Monitor, Smartphone, SquareStack, Tablet } from 'lucide-react';
+import { useState } from 'react';
 import { Card, CardContent } from '../ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
 import SectionBadge from './SectionBadge';
 
 const CategoryBrowser = () => {
-  const categories = [
+  const [categories, setCategories] = useState([
+    {
+      id: 'all',
+      name: 'All Products',
+      icon: SquareStack,
+      isActive: true
+    },
     {
       id: 'phone',
       name: 'Phone',
@@ -15,7 +23,7 @@ const CategoryBrowser = () => {
       id: 'computers',
       name: 'Computers',
       icon: Monitor,
-      isActive: true
+      isActive: false
     },
     {
       id: 'tablets',
@@ -29,7 +37,14 @@ const CategoryBrowser = () => {
       icon: Headphones,
       isActive: false
     }
-  ];
+  ]);
+
+  const handleCardClick = (id: string) => {
+    setCategories(categories.map(category => ({
+      ...category,
+      isActive: category.id === id
+    })));
+  };
 
   return (
     <div>
@@ -48,7 +63,7 @@ const CategoryBrowser = () => {
             <CarouselNext className="static translate-y-0 cursor-pointer size-7" iconClassName="size-4" strokeWidth={3} variant="secondary" />
           </div>
         </div>
-        <CarouselContent className="-ml-2 md:-ml-4 mt-3">
+        <CarouselContent className="mt-2">
           {categories.map((category) => {
             const IconComponent = category.icon;
 
@@ -62,6 +77,7 @@ const CategoryBrowser = () => {
                 : 'bg-white border-gray-400'
               }
                   `}
+                  onClick={() => handleCardClick(category.id)}
                 >
                   <CardContent className="p-5">
                     <div className="flex flex-col items-center gap-4">
