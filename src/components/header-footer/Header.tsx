@@ -9,7 +9,7 @@ const Header = () => {
       <Button
         variant="ghost"
         size="icon"
-        className="hover:text-red-500 transitionunks-colors duration-200 cursor-pointer"
+        className="hover:text-red-500 transition-colors duration-200 cursor-pointer"
         aria-label="Favorites"
       >
         <Heart className="w-5 h-5" />
