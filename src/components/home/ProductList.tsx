@@ -1,6 +1,5 @@
 import SectionBadge from '@/components/home/SectionBadge';
 import { Button } from '@/components/ui/button';
-import { Eye, Heart } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 
 const ProductList = () => {
@@ -28,22 +27,6 @@ const ProductList = () => {
 						<Card className="overflow-hidden transition-shadow duration-200 shadow-none border-0 h-fit max-w-sm mx-auto pb-4 pt-0">
 						{/* Product Image Section */}
 						<div className="relative bg-gray-50">
-							<div className="absolute top-4 right-4 flex flex-col gap-2">
-								<Button
-									variant="ghost"
-									size="icon"
-									className="h-10 w-10 rounded-full bg-white hover:bg-gray-100 shadow-sm"
-								>
-									<Heart className="h-5 w-5 text-gray-600" />
-								</Button>
-								<Button
-									variant="ghost"
-									size="icon"
-									className="h-10 w-10 rounded-full bg-white hover:bg-gray-100 shadow-sm"
-								>
-									<Eye className="h-5 w-5 text-gray-600" />
-								</Button>
-							</div>
 							<div className="px-10">
 								<img
 									src={product.image}
