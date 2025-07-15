@@ -4,12 +4,12 @@ import { Heart, ShoppingCart } from 'lucide-react';
 const Header = () => {
   return (
     <header
-      className="w-full bg-white border-b border-gray-300 px-3 py-1 flex items-center justify-end gap-3"
+      className="w-full bg-white border-b border-gray-300 px-3 py-1 flex items-center justify-end gap-3 sticky top-0 z-10"
     >
       <Button
         variant="ghost"
         size="icon"
-        className="hover:text-red-500 transition-colors duration-200 cursor-pointer"
+        className="hover:text-red-500 transitionunks-colors duration-200 cursor-pointer"
         aria-label="Favorites"
       >
         <Heart className="w-5 h-5" />
