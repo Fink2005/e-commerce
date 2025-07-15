@@ -85,3 +85,36 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registrationSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+
+export const getValidationSchema = (mode: 'login' | 'register') => {
+  switch (mode) {
+    case 'login':
+      return loginSchema;
+    case 'register':
+      return registrationSchema;
+    default:
+      throw new Error(`Unknown auth mode: ${mode}`);
+  }
+};
+
+export const validateAuthForm = (data: unknown, mode: 'login' | 'register') => {
+  const schema = getValidationSchema(mode);
+  return schema.safeParse(data);
+};
+
+// Error formatting helper
+export const formatZodErrors = (errors: z.ZodError) => {
+  return errors.issues.reduce((acc, issue) => {
+    const field = issue.path[0] as string;
+    acc[field] = issue.message;
+    return acc;
+  }, {} as Record<string, string>);
+};
+
+export const validateLoginForm = (data: unknown) => {
+  return loginSchema.safeParse(data);
+};
+
+export const validateRegistrationForm = (data: unknown) => {
+  return registrationSchema.safeParse(data);
+};
