@@ -5,7 +5,7 @@ export default async function Layout(props: {
   params: Promise<{ locale: string }>;
 }) {
   return (
-    <main className="min-h-screen overflow-y-auto">
+    <main className="min-h-screen">
       <Header />
       {props.children}
       {/* <Footer /> */}
