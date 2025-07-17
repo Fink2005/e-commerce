@@ -299,9 +299,9 @@ const AuthForm = ({ mode }: AuthFormProps) => {
                             onClick={() => togglePasswordVisibility('confirm')}
                           >
                             {showPassword.confirm ? (
-                              <Eye />
+                              <Eye className="size-4" />
                             ) : (
-                              <EyeOff />
+                              <EyeOff className="size-4" />
                             )}
                           </Button>
                         </div>
@@ -332,7 +332,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
-                    <LoadingIcon />
+                    <LoadingIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
                     {isLogin ? 'Logging in...' : 'Creating account...'}
                   </div>
                 ) : (
@@ -359,7 +359,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
                 variant="outline"
                 className="w-full bg-gray-800/50 border-gray-600 text-white hover:bg-gray-700 hover:text-white py-3 rounded-md font-medium flex items-center justify-center gap-3 transition-colors"
               >
-                <GoogleIcon />
+                <GoogleIcon className="size-5" />
                 Sign up with Google
               </Button>
             </div>
