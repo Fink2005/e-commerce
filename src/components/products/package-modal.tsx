@@ -74,15 +74,15 @@ export function PackageModal({ product, isOpen, onCloseAction }: PackageModalPro
       onCloseAction();
     } else {
       // Initialize when opening
-      if (product.usageRecommendation) {
+      if (product.usageRecommendation?.mediumUser) {
         setCustomPlan(product.usageRecommendation.mediumUser);
       }
-      if (product.includedDevices) {
+      if (product.includedDevices && product.includedDevices.length > 0) {
         const defaultDevice: any = {};
         defaultDevice[product.packageType || ''] = product.includedDevices[0]?.name || '';
         setSelectedDevices(defaultDevice);
       }
-      if (product.availableCombinations) {
+      if (product.availableCombinations && product.availableCombinations.length > 0) {
         setSelectedCombination(product.availableCombinations[0]?.name || '');
       }
     }
@@ -193,7 +193,7 @@ export function PackageModal({ product, isOpen, onCloseAction }: PackageModalPro
                   </div>
 
                   {/* Device Selection */}
-                  {product.includedDevices && (
+                  {product.includedDevices && product.includedDevices.length > 0 && (
                     <div>
                       <Label className="text-base font-semibold">Choose Device</Label>
                       <div className="grid grid-cols-1 gap-3 mt-3">
@@ -240,7 +240,7 @@ export function PackageModal({ product, isOpen, onCloseAction }: PackageModalPro
                   )}
 
                   {/* Default Plans */}
-                  {selectedPlan === 'default' && product.defaultPlans && (
+                  {selectedPlan === 'default' && product.defaultPlans && product.defaultPlans.length > 0 && (
                     <div className="space-y-3">
                       <Label className="text-base font-semibold">Available Plans</Label>
                       <RadioGroup defaultValue={product.defaultPlans[1]?.name?.toLowerCase()}>
@@ -434,8 +434,8 @@ export function PackageModal({ product, isOpen, onCloseAction }: PackageModalPro
                               <span>
                                 $
                                 {customPlan.minutes === 'unlimited'
-                                  ? product.customizable.minutes?.unlimited
-                                  : ((customPlan.minutes || 0) * (product.customizable.minutes?.price || 0)).toFixed(2)}
+                                  ? product.customizable?.minutes?.unlimited || 0
+                                  : ((customPlan.minutes || 0) * (product.customizable?.minutes?.price || 0)).toFixed(2)}
                               </span>
                             </div>
                           )}
@@ -449,8 +449,8 @@ export function PackageModal({ product, isOpen, onCloseAction }: PackageModalPro
                               <span>
                                 $
                                 {customPlan.sms === 'unlimited'
-                                  ? product.customizable.sms?.unlimited
-                                  : ((customPlan.sms || 0) * (product.customizable.sms?.price || 0)).toFixed(2)}
+                                  ? product.customizable?.sms?.unlimited || 0
+                                  : ((customPlan.sms || 0) * (product.customizable?.sms?.price || 0)).toFixed(2)}
                               </span>
                             </div>
                           )}
@@ -464,8 +464,8 @@ export function PackageModal({ product, isOpen, onCloseAction }: PackageModalPro
                               <span>
                                 $
                                 {customPlan.data === 'unlimited'
-                                  ? product.customizable.data?.unlimited
-                                  : ((customPlan.data || 0) * (product.customizable.data?.price || 0)).toFixed(2)}
+                                  ? product.customizable?.data?.unlimited || 0
+                                  : ((customPlan.data || 0) * (product.customizable?.data?.price || 0)).toFixed(2)}
                               </span>
                             </div>
                           )}
@@ -478,7 +478,7 @@ export function PackageModal({ product, isOpen, onCloseAction }: PackageModalPro
                               </span>
                               <span>
                                 $
-                                {((customPlan.speed || 0) * (product.customizable.speed?.price || 0)).toFixed(2)}
+                                {((customPlan.speed || 0) * (product.customizable?.speed?.price || 0)).toFixed(2)}
                               </span>
                             </div>
                           )}
@@ -509,7 +509,10 @@ export function PackageModal({ product, isOpen, onCloseAction }: PackageModalPro
                   onValueChange={(value) => {
                     setSelectedUsageProfile(value);
                     if (product.usageRecommendation) {
-                      setCustomPlan(product.usageRecommendation[value as keyof typeof product.usageRecommendation]);
+                      const recommendation = product.usageRecommendation[value as keyof typeof product.usageRecommendation];
+                      if (recommendation) {
+                        setCustomPlan(recommendation);
+                      }
                     }
                   }}
                   className="mt-3"

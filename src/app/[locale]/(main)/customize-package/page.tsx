@@ -91,7 +91,7 @@ export default function CustomizePackage() {
                 max={100}
                 step={5}
                 value={[mobileDataGb]}
-                onValueChange={([value]) => setMobileDataGb(value)}
+                onValueChange={([value]) => setMobileDataGb(value ?? 0)}
                 className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
               />
               <div className="flex justify-between text-xs text-gray-500">
@@ -130,7 +130,7 @@ export default function CustomizePackage() {
                 max={500}
                 step={25}
                 value={[broadbandMbps]}
-                onValueChange={([value]) => setBroadbandMbps(value)}
+                onValueChange={([value]) => setBroadbandMbps(value ?? 0)}
                 className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
               />
               <div className="flex justify-between text-xs text-gray-500">
@@ -163,7 +163,11 @@ export default function CustomizePackage() {
                   +$
                   {addOnPrice}
                 </span>
-                <Checkbox id="streaming" checked={isStreamingChecked} onCheckedChange={setIsStreamingChecked} />
+                <Checkbox
+                  id="streaming"
+                  checked={isStreamingChecked}
+                  onCheckedChange={checked => setIsStreamingChecked(checked === true)}
+                />
               </div>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
@@ -179,7 +183,11 @@ export default function CustomizePackage() {
                   +$
                   {addOnPrice}
                 </span>
-                <Checkbox id="security" checked={isSecurityChecked} onCheckedChange={setIsSecurityChecked} />
+                <Checkbox
+                  id="security"
+                  checked={isSecurityChecked}
+                  onCheckedChange={checked => setIsSecurityChecked(checked === true)}
+                />
               </div>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
@@ -198,7 +206,7 @@ export default function CustomizePackage() {
                 <Checkbox
                   id="international"
                   checked={isInternationalChecked}
-                  onCheckedChange={setIsInternationalChecked}
+                  onCheckedChange={checked => setIsInternationalChecked(checked === true)}
                 />
               </div>
             </div>
