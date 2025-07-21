@@ -1,3 +1,5 @@
+import Footer from '@/components/header-footer/Footer';
+import Header from '@/components/header-footer/Header';
 import RootTemplate from '@/templates/RootTemplate';
 
 export default async function MainLayout(props: {
@@ -6,7 +8,11 @@ export default async function MainLayout(props: {
 }) {
   return (
     <RootTemplate>
-      {props.children}
+      <Header />
+      <div className="pb-16">
+        {props.children}
+      </div>
+      <Footer />
     </RootTemplate>
   );
 }
