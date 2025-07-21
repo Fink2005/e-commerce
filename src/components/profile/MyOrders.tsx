@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +8,13 @@ import OrderDetails from './OrderDetails';
 
 export default function MyOrders() {
   const [currentView, setCurrentView] = useState('orders'); // 'orders' or 'details'
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState<{
+    id: string;
+    date: string;
+    description: string;
+    amount: string;
+    status: string;
+  } | null>(null);
 
   const orders = [
     {
@@ -33,8 +40,8 @@ export default function MyOrders() {
     }
   ];
 
-  const getStatusBadge = (status) => {
-    const baseClasses = "text-xs font-medium px-3 py-1 rounded-full";
+  const getStatusBadge = (status: string) => {
+    const baseClasses = 'text-xs font-medium px-3 py-1 rounded-full';
     switch (status) {
       case 'Completed':
         return `${baseClasses} bg-black text-white`;
@@ -45,7 +52,7 @@ export default function MyOrders() {
     }
   };
 
-  const handleViewDetails = (order) => {
+  const handleViewDetails = (order: { id: string; date: string; description: string; amount: string; status: string }) => {
     setSelectedOrder(order);
     setCurrentView('details');
   };
@@ -56,7 +63,9 @@ export default function MyOrders() {
   };
 
   if (currentView === 'details') {
-    return <OrderDetails order={selectedOrder} onBack={handleBackToOrders} />;
+    return selectedOrder ? (
+      <OrderDetails order={selectedOrder} onBack={handleBackToOrders} />
+    ) : null;
   }
 
   return (
@@ -82,13 +91,13 @@ export default function MyOrders() {
                     {order.status}
                   </span>
                 </div>
-                
+
                 <p className="text-sm">{order.description}</p>
-                
+
                 <div className="flex justify-between items-center">
                   <span className="font-semibold">{order.amount}</span>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => handleViewDetails(order)}
                   >

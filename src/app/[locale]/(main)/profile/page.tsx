@@ -1,13 +1,13 @@
-"use client"
+'use client';
 
-import MyAccount from "@/components/profile/MyAccount"
-import MyOrders from "@/components/profile/MyOrders"
-import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useState } from "react"
+import MyAccount from '@/components/profile/MyAccount';
+import MyOrders from '@/components/profile/MyOrders';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState } from 'react';
 
 export default function MobileProfilePage() {
-  const [activeTab, setActiveTab] = useState("account")
+  const [activeTab, setActiveTab] = useState('account');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -41,7 +41,7 @@ export default function MobileProfilePage() {
           </TabsList>
 
           <TabsContent value="account" className="mt-0">
-						<div className="px-4 py-4">
+            <div className="px-4 py-4">
               <MyAccount></MyAccount>
             </div>
           </TabsContent>
@@ -66,5 +66,5 @@ export default function MobileProfilePage() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

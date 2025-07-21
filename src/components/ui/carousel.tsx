@@ -1,3 +1,7 @@
+/* eslint-disable react-hooks-extra/no-direct-set-state-in-use-effect */
+/* eslint-disable react/no-unstable-context-value */
+/* eslint-disable perfectionist/sort-named-exports */
+/* eslint-disable antfu/consistent-list-newline */
 'use client';
 
 import type { UseEmblaCarouselType } from 'embla-carousel-react';
@@ -251,4 +255,3 @@ export {
   CarouselNext,
   CarouselPrevious, type CarouselApi
 };
-

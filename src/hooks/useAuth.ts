@@ -1,6 +1,6 @@
 'use client';
 
-import { clearAuthCookies, createCookie, getCookie } from '@/app/actions/cookie';
+import { clearAuthCookies, getCookie } from '@/app/actions/cookie';
 import authRequests from '@/app/apis/requests/auth';
 import type { LoginFormData } from '@/app/schema/auth';
 import type { User } from '@/types/auth';
@@ -37,28 +37,13 @@ export function useAuth() {
       const response = await authRequests.login(credentials);
 
       // Fixed: Remove .result since API returns tokens directly
-      if (response && response.accessToken) {
-        const { accessToken, refreshToken } = response;
-
+      if (response) {
         // Create user object from login credentials since API doesn't return user info
         const user: User = {
           id: '', // You might need to decode JWT or get from another endpoint
           username: credentials.email,
           email: credentials.email,
         };
-
-        // Store tokens in httpOnly cookies
-        await createCookie({
-          name: 'authData',
-          value: JSON.stringify({ user, accessToken }),
-          maxAge: 15 * 60, // 15 minutes for access token
-        });
-
-        await createCookie({
-          name: 'refreshToken',
-          value: refreshToken,
-          maxAge: 7 * 24 * 60 * 60, // 7 days for refresh token
-        });
 
         setUser(user);
         setIsAuthenticated(true);

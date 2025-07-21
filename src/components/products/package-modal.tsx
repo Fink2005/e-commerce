@@ -331,7 +331,7 @@ export function PackageModal({ product, isOpen, onCloseAction }: PackageModalPro
                               onValueChange={value =>
                                 setCustomPlan({
                                   ...customPlan,
-                                  minutes: value[0] >= (product.customizable?.minutes?.max ?? 0) ? 'unlimited' : value[0],
+                                  minutes: value[0]! >= (product.customizable?.minutes?.max ?? 0) ? 'unlimited' : value[0],
                                 })}
                               max={product.customizable.minutes.max}
                               min={product.customizable.minutes.min}
@@ -359,7 +359,7 @@ export function PackageModal({ product, isOpen, onCloseAction }: PackageModalPro
                               onValueChange={value =>
                                 setCustomPlan({
                                   ...customPlan,
-                                  sms: value[0] >= (product.customizable?.sms?.max ?? 0) ? 'unlimited' : value[0],
+                                  sms: value[0]! >= (product.customizable?.sms?.max ?? 0) ? 'unlimited' : value[0],
                                 })}
                               max={product.customizable.sms.max}
                               min={product.customizable.sms.min}
@@ -387,7 +387,7 @@ export function PackageModal({ product, isOpen, onCloseAction }: PackageModalPro
                               onValueChange={value =>
                                 setCustomPlan({
                                   ...customPlan,
-                                  data: value[0] >= (product.customizable?.data?.max ?? 0) ? 'unlimited' : value[0],
+                                  data: value[0]! >= (product.customizable?.data?.max ?? 0) ? 'unlimited' : value[0],
                                 })}
                               max={product.customizable.data.max}
                               min={product.customizable.data.min}

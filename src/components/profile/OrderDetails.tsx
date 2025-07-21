@@ -3,7 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, CheckCircle, Clock, Download, MapPin, Package, Truck } from 'lucide-react';
 
-export default function OrderDetails({ order, onBack }) {
+interface Order {
+  id: string;
+  status: string;
+  // Add other properties of the order object as needed
+}
+
+export default function OrderDetails({ order, onBack }: { order: Order; onBack: () => void }) {
   const orderDetails = {
     id: order.id,
     date: 'Jan 15, 2024',
@@ -47,8 +53,8 @@ export default function OrderDetails({ order, onBack }) {
     }
   };
 
-  const getStatusBadge = (status) => {
-    const baseClasses = "text-xs font-medium px-3 py-1 rounded-full";
+  const getStatusBadge = (status: string) => {
+    const baseClasses = 'text-xs font-medium px-3 py-1 rounded-full';
     switch (status) {
       case 'Completed':
         return `${baseClasses} bg-black text-white`;
@@ -63,9 +69,9 @@ export default function OrderDetails({ order, onBack }) {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-md mx-auto bg-white min-h-screen">
         <div className="flex items-center p-4 border-b bg-white">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onBack}
             className="mr-3 p-0"
           >
@@ -87,7 +93,10 @@ export default function OrderDetails({ order, onBack }) {
               <div className="flex justify-between items-center">
                 <div>
                   <p className="font-medium">{orderDetails.id}</p>
-                  <p className="text-sm text-gray-600">Placed on {orderDetails.date}</p>
+                  <p className="text-sm text-gray-600">
+                    Placed on
+                    {orderDetails.date}
+                  </p>
                 </div>
                 <span className={getStatusBadge(orderDetails.status)}>
                   {orderDetails.status}
