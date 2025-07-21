@@ -10,8 +10,7 @@ const isProtectedRoute = (pathname: string): boolean => {
     || pathname.startsWith('/account')
     || pathname.startsWith('/orders')
     || pathname.startsWith('/wishlist')
-    || pathname.startsWith('/dashboard')
-    || pathname.startsWith('/settings');
+    || pathname.startsWith('/dashboard');
 };
 
 const isAdminRoute = (pathname: string): boolean => {
@@ -70,24 +69,24 @@ export default async function middleware(
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
 
+  // Get user info from cookie (for middleware decisions)
+  const userInfoCookie = request.cookies.get('userInfo');
+  const accessTokenCookie = request.cookies.get('access_token');
+
   // Get authentication data from cookies (set by backend)
-  const authDataCookie = request.cookies.get('authData');
-  let isAuthenticated = false;
+  const isAuthenticated = !!accessTokenCookie;
   let userRole = null;
   let isEmailConfirmed = false;
+  let userEmail = '';
 
-  if (authDataCookie) {
+  if (userInfoCookie) {
     try {
-      const authData = JSON.parse(authDataCookie.value);
-      isAuthenticated = !!authData?.user;
-      userRole = authData?.user?.role;
-      isEmailConfirmed = authData?.user?.isEmailConfirmed;
+      const userInfo = JSON.parse(userInfoCookie.value);
+      userRole = userInfo.role;
+      isEmailConfirmed = userInfo.isEmailConfirmed;
+      userEmail = userInfo.email;
     } catch (error) {
-      console.error('Error parsing authData cookie:', error);
-      // Clear invalid cookie
-      const response = NextResponse.next();
-      response.cookies.delete('authData');
-      return response;
+      console.error('Error parsing userInfo cookie:', error);
     }
   }
 
@@ -103,6 +102,26 @@ export default async function middleware(
 
     if (decision.isDenied()) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  }
+
+  if (pathname.startsWith('/login')) {
+    if (!isAuthenticated) {
+      // No valid session, redirect to login
+      const loginUrl = new URL('/login', request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Redirect based on role and email confirmation (your original logic)
+    if (userRole === 'ADMIN') {
+      const adminUrl = new URL('/admin', request.url);
+      return NextResponse.redirect(adminUrl);
+    } else if (!isEmailConfirmed) {
+      const verifyUrl = new URL(`/verify-email?email=${encodeURIComponent(userEmail)}`, request.url);
+      return NextResponse.redirect(verifyUrl);
+    } else {
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
     }
   }
 

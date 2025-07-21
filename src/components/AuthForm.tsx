@@ -108,14 +108,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
         if (response && response.role) {
           toast.success('Welcome back!');
 
-          // Redirect based on role and email confirmation
-          if (response.role === 'ADMIN') {
-            router.push('/admin');
-          } else if (!response.isEmailConfirmed) {
-            router.push(`/verify-email?email=${encodeURIComponent(loginData.email)}`);
-          } else {
-            router.push('/');
-          }
+          router.push('/');
         } else {
           throw new Error('Login failed - no response received');
         }
