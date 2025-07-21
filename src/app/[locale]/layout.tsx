@@ -58,26 +58,24 @@ export default async function RootLayout(props: {
   setRequestLocale(locale);
   return (
     <html lang={locale} className={sfPro.variable}>
-      <body className="min-h-screen">
-				<Header />
-					<div className="pb-16">
-						<NextIntlClientProvider>
-							<RootTemplate>
-								{props.children}
-							</RootTemplate>
-							<Toaster
-								position="top-center"
-								toastOptions={{
-									style: {
-										color: 'white',
-										background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)',
-									},
-								}}
-							/>
-						</NextIntlClientProvider>
-					</div>
-				<Footer />
-      </body>
+				<body className="min-h-screen">
+						<Header />
+							<NextIntlClientProvider>
+								<RootTemplate>
+									{props.children}
+								</RootTemplate>
+								<Toaster
+									position="top-center"
+									toastOptions={{
+										style: {
+											color: 'white',
+											background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)',
+										},
+									}}
+								/>
+							</NextIntlClientProvider>
+						<Footer />
+				</body>
     </html>
   );
 }
