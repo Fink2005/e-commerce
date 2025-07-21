@@ -1,6 +1,4 @@
 import { sfPro } from '@/app/fonts/sfPro';
-import Footer from '@/components/header-footer/Footer';
-import Header from '@/components/header-footer/Header';
 import { Toaster } from '@/components/ui/sonner';
 import { routing } from '@/libs/i18nRouting';
 import '@/styles/global.css';
@@ -58,7 +56,6 @@ export default async function RootLayout(props: {
   return (
     <html lang={locale} className={sfPro.variable}>
       <body className="min-h-screen">
-        <Header />
         <div className="pb-16">
           <NextIntlClientProvider>
             {props.children}
@@ -73,7 +70,6 @@ export default async function RootLayout(props: {
             />
           </NextIntlClientProvider>
         </div>
-        <Footer />
       </body>
     </html>
   );

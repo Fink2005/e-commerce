@@ -12,6 +12,8 @@ export type User = {
   name?: string;
   username?: string;
   email: string;
+  role?: 'CUSTOMER' | 'ADMIN';
+  isEmailConfirmed?: boolean;
   roles?: string[];
   created_at?: string;
   updated_at?: string;
@@ -22,9 +24,15 @@ export type TokenResponse = {
   refreshToken: string;
 };
 
-export type LoginResponse = TokenResponse | null;
+// New login response matching your backend
+export type LoginResponse = {
+  role: 'CUSTOMER' | 'ADMIN';
+  isEmailConfirmed: boolean;
+} | null;
 
 export type RegisterResponse = {
+  success: boolean;
+  message?: string;
   id: number;
   email: string;
   name: string;

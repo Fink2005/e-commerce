@@ -1,13 +1,13 @@
 import apiRequest from '@/app/apis/apiRequest';
-import type { LoginPayload, LoginResponse, RegisterPayload, RegisterResponse, TokenResponse } from '@/types/auth';
+import type { LoginPayload, LoginResponse, RegisterPayload, RegisterResponse } from '@/types/auth';
 
 const authRequests = {
   async login(body: LoginPayload): Promise<LoginResponse> {
     try {
-      return await apiRequest<TokenResponse>('auth/login', 'POST', body);
+      return await apiRequest<LoginResponse>('auth/login', 'POST', body);
     } catch (error) {
       console.error('Login request failed:', error);
-      return null;
+      throw error;
     }
   },
 
@@ -16,13 +16,13 @@ const authRequests = {
       return await apiRequest<RegisterResponse>('auth/register', 'POST', body);
     } catch (error) {
       console.error('Register request failed:', error);
-      return null;
+      throw error;
     }
   },
 
-  async refreshToken(refreshToken: string): Promise<TokenResponse | null> {
+  async refreshToken(refreshToken: string): Promise<any> {
     try {
-      return await apiRequest<TokenResponse>('auth/refresh-token', 'POST', {
+      return await apiRequest('auth/refresh-token', 'POST', {
         refreshToken,
       });
     } catch (error) {
@@ -30,6 +30,57 @@ const authRequests = {
       return null;
     }
   },
+
+  async sendConfirmationEmail(email: string): Promise<boolean> {
+    try {
+      await apiRequest('auth/send-email', 'POST', { email });
+      return true;
+    } catch (error) {
+      console.error('Send confirmation email failed:', error);
+      return false;
+    }
+  },
+
+  async verifyEmail(code: string): Promise<boolean> {
+    try {
+      await apiRequest(`auth/verify-email?code=${code}`, 'GET');
+      return true;
+    } catch (error) {
+      console.error('Email verification failed:', error);
+      return false;
+    }
+  },
+
+  async forgotPassword(email: string): Promise<boolean> {
+    try {
+      await apiRequest('auth/forgot-password', 'POST', { email });
+      return true;
+    } catch (error) {
+      console.error('Forgot password request failed:', error);
+      throw error; // Re-throw to handle in component
+    }
+  },
+
+  async verifyPasswordResetCode(code: string): Promise<boolean> {
+    try {
+      await apiRequest(`auth/verify-password?code=${code}`, 'GET');
+      return true;
+    } catch (error) {
+      console.error('Password reset code verification failed:', error);
+      throw error;
+    }
+  },
+
+  async setNewPassword(password: string, code: string): Promise<boolean> {
+    try {
+      await apiRequest('auth/new-password', 'POST', { password, code });
+      return true;
+    } catch (error) {
+      console.error('Set new password failed:', error);
+      throw error;
+    }
+  },
+
 };
 
 export default authRequests;

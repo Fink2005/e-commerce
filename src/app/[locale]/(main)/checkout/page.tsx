@@ -1,10 +1,10 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Minus, Plus } from "lucide-react"
-import Image from "next/image"
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Minus, Plus } from 'lucide-react';
+import Image from 'next/image';
 
 export default function CheckoutSection() {
   return (
@@ -16,10 +16,12 @@ export default function CheckoutSection() {
           <CardContent className="p-4">
             <div className="flex items-start gap-4">
               <div className="w-16 h-16 rounded-lg flex-shrink-0 overflow-hidden">
-                <img
+                <Image
                   src="https://i.postimg.cc/fyLV8F7T/image-63.png"
                   alt="LCD Monitor"
-                  className="w-full object-contain mx-auto" 
+                  width={64}
+                  height={64}
+                  className="w-full object-contain mx-auto"
                 />
               </div>
               <div className="flex-1 min-w-0">
@@ -148,9 +150,9 @@ export default function CheckoutSection() {
       </div>
 
       {/* Place Order Button */}
-      <Button className="w-full bg-red-500 hover:bg-red-600 text-white py-3 text-base font-medium" size="lg">
+      <Button className="w-full bg-red-500 hover:bg-red-600 text-white py-3 text-base font-medium">
         Place Order
       </Button>
     </div>
-  )
+  );
 }
