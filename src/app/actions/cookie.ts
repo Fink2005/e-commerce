@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 
-export async function createCookie({ name, value }: { name: string; value: any }) {
+export async function createCookie({ name, value, maxAge }: { name: string; value: any; maxAge: number }) {
   const cookieStore = await cookies();
   cookieStore.set({
     name,
@@ -11,6 +11,7 @@ export async function createCookie({ name, value }: { name: string; value: any }
     path: '/',
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
+    ...(maxAge && { maxAge }),
   });
 }
 
@@ -27,4 +28,10 @@ export async function getCookie(name: string) {
 export async function deleteCookie(name: string) {
   const cookieStore = await cookies();
   cookieStore.delete(name);
+}
+
+export async function clearAuthCookies() {
+  const cookieStore = await cookies();
+  cookieStore.delete('authData');
+  cookieStore.delete('refreshToken');
 }

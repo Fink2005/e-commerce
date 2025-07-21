@@ -1,17 +1,9 @@
+import AuthForm from '@/components/AuthForm';
 
-const login = () => {
+const LoginPage = () => {
   return (
-    <div className="flex flex-col items-center relative pt-20">
-      <>
-        <div className="flex">
-       // logo here
-        </div>
-        <div className="bg-login-card">
-          <p className="text-white text-[1.375rem]">Kết nối để bắt đầu hành trình</p>
-        </div>
-      </>
-    </div>
+    <AuthForm mode="login" />
   );
 };
 
-export default login;
+export default LoginPage;
