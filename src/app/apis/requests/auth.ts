@@ -3,11 +3,11 @@ import type { LoginPayload, LoginResponse, RegisterPayload, RegisterResponse } f
 
 const authRequests = {
   async login(body: LoginPayload): Promise<LoginResponse> {
-    return await apiRequest<LoginResponse>('/auth/login', 'POST', body);
+    return await apiRequest<LoginResponse>('auth/login', 'POST', body);
   },
 
   async register(body: RegisterPayload): Promise<RegisterResponse> {
-    return await apiRequest<RegisterResponse>('/auth/register', 'POST', body);
+    return await apiRequest<RegisterResponse>('auth/register', 'POST', body);
   },
 };
 

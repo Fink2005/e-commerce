@@ -39,6 +39,8 @@ const emailOrPhoneSchema = z
     }
   );
 
+const nameSchema = z.string().min(2, 'Name must be at least 2 characters');
+
 // Login Schema
 export const loginSchema = z.object({
   email: emailOrPhoneSchema,
@@ -49,6 +51,7 @@ export const loginSchema = z.object({
 
 // Registration Schema
 export const registrationSchema = z.object({
+  name: nameSchema,
   email: emailOrPhoneSchema,
   password: passwordSchema,
   confirmPassword: z
@@ -86,14 +89,7 @@ export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 export const getValidationSchema = (mode: 'login' | 'register') => {
-  switch (mode) {
-    case 'login':
-      return loginSchema;
-    case 'register':
-      return registrationSchema;
-    default:
-      throw new Error(`Unknown auth mode: ${mode}`);
-  }
+  return mode === 'login' ? loginSchema : registrationSchema;
 };
 
 export const validateAuthForm = (data: unknown, mode: 'login' | 'register') => {
@@ -102,10 +98,16 @@ export const validateAuthForm = (data: unknown, mode: 'login' | 'register') => {
 };
 
 // Error formatting helper
-export const formatZodErrors = (errors: z.ZodError) => {
-  return errors.issues.reduce((acc, issue) => {
-    const field = issue.path[0] as string;
-    acc[field] = issue.message;
-    return acc;
-  }, {} as Record<string, string>);
+export const formatZodErrors = (error: any) => {
+  const formattedErrors: Record<string, string> = {};
+
+  if (error.errors) {
+    error.errors.forEach((err: any) => {
+      if (err.path && err.path.length > 0) {
+        formattedErrors[err.path[0]] = err.message;
+      }
+    });
+  }
+
+  return formattedErrors;
 };
