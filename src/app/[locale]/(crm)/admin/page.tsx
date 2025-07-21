@@ -30,25 +30,25 @@ export default function CRMDashboard() {
       id: 'ENQ001',
       customer: 'John Smith',
       subject: 'Package Information',
-      status: 'pending',
+      status: 'pending' as const,
       date: '2024-01-15',
-      priority: 'high',
+      priority: 'high' as const,
     },
     {
       id: 'ENQ002',
       customer: 'Sarah Johnson',
       subject: 'Order Status',
-      status: 'responded',
+      status: 'responded' as const,
       date: '2024-01-15',
-      priority: 'medium',
+      priority: 'medium' as const,
     },
     {
       id: 'ENQ003',
       customer: 'Mike Wilson',
       subject: 'Refund Request',
-      status: 'pending',
+      status: 'pending' as const,
       date: '2024-01-14',
-      priority: 'high',
+      priority: 'high' as const,
     },
   ];
 
@@ -178,7 +178,7 @@ export default function CRMDashboard() {
           </TabsContent>
 
           <TabsContent value="customers" className="space-y-6">
-            <CustomersTable customers={customers} onVerifyCustomer={handleVerifyCustomerAction} />
+            <CustomersTable customers={customers} onVerifyCustomerAction={handleVerifyCustomerAction} />
           </TabsContent>
 
           <TabsContent value="enquiries" className="space-y-6">

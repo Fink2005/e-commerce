@@ -22,7 +22,7 @@ export type TokenResponse = {
   refreshToken: string;
 };
 
-export type LoginResponse = TokenResponse;
+export type LoginResponse = TokenResponse | null;
 
 export type RegisterResponse = {
   id: number;
@@ -30,7 +30,7 @@ export type RegisterResponse = {
   name: string;
   created_at: string;
   updated_at: string;
-};
+} | null;
 
 export type VerifyKycResponse = {
   user: User;
