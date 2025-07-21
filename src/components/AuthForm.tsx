@@ -26,51 +26,6 @@ interface AuthFormProps {
   onModeChange?: (mode: 'login' | 'register') => void;
 }
 
-export const testUsers = [
-  {
-    id: '1',
-    username: 'johndoe',
-    email: 'john.doe@example.com',
-    phone: '+1234567890',
-    password: 'Password123', // In real app, this would be hashed
-    roles: ['user'],
-    isKyc: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    username: 'janedoe',
-    email: 'jane.doe@example.com',
-    phone: '+0987654321',
-    password: 'SecurePass456',
-    roles: ['user', 'admin'],
-    isKyc: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    username: 'testuser',
-    email: 'test@cheapdeals.com',
-    phone: '+1122334455',
-    password: 'TestPass789',
-    roles: ['user'],
-    isKyc: false,
-    createdAt: new Date().toISOString(),
-  }
-];
-
-export const generateAuthResponse = (user: typeof testUsers[0]) => ({
-  user: {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-  },
-  accessToken: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIke3VzZXIuaWR9IiwiaWF0IjoxNzM0MjQwMDAwLCJleHAiOjE3MzQyNDM2MDB9.sample_access_token_${user.id}`,
-  refreshToken: `refresh_token_sample_${user.id}_${Date.now()}`,
-  expiresIn: 3600, // 1 hour
-  tokenType: 'Bearer'
-});
-
 const AuthForm = ({ mode }: AuthFormProps) => {
   const [showPassword, setShowPassword] = useState<{
     original: boolean;
@@ -89,7 +44,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
   const form = useForm<LoginFormData | RegisterFormData>({
     resolver: zodResolver(validationSchema),
     defaultValues: isRegister
-      ? { email: '', password: '', confirmPassword: '' }
+      ? { name: '', email: '', password: '', confirmPassword: '' }
       : { email: '', password: '' },
   });
 
@@ -99,78 +54,63 @@ const AuthForm = ({ mode }: AuthFormProps) => {
       if (isRegister) {
         const registerData = data as RegisterFormData;
         const response = await authRequests.register({
+          name: registerData.name,
           email: registerData.email,
           password: registerData.password,
-          confirmPassword: registerData.confirmPassword,
         });
 
-        if (response) {
+        if (response && response.id) {
+          // Store user data using createCookie
+          await createCookie({
+            name: 'authData',
+            value: JSON.stringify({
+              user: {
+                id: response.id,
+                name: response.name,
+                email: response.email,
+                created_at: response.created_at,
+                updated_at: response.updated_at,
+              },
+            }),
+            maxAge: 30 * 24 * 60 * 60, // 30 days
+          });
+
+          toast.success('Registration successful! Welcome to CheapDeals!');
+          router.push('/login'); // Redirect to login after successful registration
+        }
+      } else {
+        // Login logic remains the same
+        const loginData = data as LoginFormData;
+        const response = await authRequests.login({
+          email: loginData.email,
+          password: loginData.password,
+        });
+
+        if (response && response.accessToken) {
           // Store auth data using createCookie
           await createCookie({
             name: 'authData',
             value: JSON.stringify({
-              user: response.user,
+              user: {
+                id: '',
+                username: loginData.email,
+                email: loginData.email,
+              },
               accessToken: response.accessToken,
             }),
-            maxAge: 3600,
+            maxAge: 3600, // 1 hour for access token
           });
 
           // Store refresh token separately
           await createCookie({
             name: 'refreshToken',
             value: response.refreshToken,
-            maxAge: 30 * 24 * 60 * 60,
+            maxAge: 7 * 24 * 60 * 60, // 7 days for refresh token
           });
-
-          toast.success('Registration successful! Welcome to CheapDeals!');
-          router.push('/');
-        }
-      } else {
-        const loginData = data as LoginFormData;
-
-        // Find user in test data by email or phone
-        const user = testUsers.find(u =>
-          u.email === loginData.email || u.phone === loginData.email
-        );
-
-        // Check if user exists and password matches
-        if (user && user.password === loginData.password) {
-          // Generate mock auth response
 
           toast.success('Welcome back!');
-          // Redirect to home page (blank URL)
           router.push('/');
-        } else {
-          // Invalid credentials
-          toast.error('Invalid email or password. Please try again.');
-          form.setError('email', {
-            type: 'manual',
-            message: 'Invalid credentials',
-          });
-          form.setError('password', {
-            type: 'manual',
-            message: 'Invalid credentials',
-          });
         }
-
-        // Waiting for backend
-        // const loginData = data as LoginFormData;
-        // const response = await authRequests.login({
-        //   email: loginData.email,
-        //   password: loginData.password,
-        // });
-
-        // if (response?.result) {
-        //   await createAuthCookies({
-        //     user: response.result.user,
-        //     accessToken: response.result.accessToken,
-        //     refreshToken: response.result.refreshToken,
-        //     expiresIn: response.result.expiresIn,
-        //   });
-
-        //   toast.success('Welcome back!');
-        //   router.push('/');
-        // }
       }
     } catch (error: any) {
       if (error.name === 'ZodError') {
@@ -180,6 +120,22 @@ const AuthForm = ({ mode }: AuthFormProps) => {
             type: 'manual',
             message,
           });
+        });
+      } else if (error.message === 'Invalid credentials') {
+        toast.error('Invalid email or password. Please try again.');
+        form.setError('email', {
+          type: 'manual',
+          message: 'Invalid credentials',
+        });
+        form.setError('password', {
+          type: 'manual',
+          message: 'Invalid credentials',
+        });
+      } else if (error.message === 'User already exists') {
+        toast.error('An account with this email already exists. Please use a different email or try logging in.');
+        form.setError('email', {
+          type: 'manual',
+          message: 'User already exists',
         });
       } else {
         toast.error(error.message || `${isRegister ? 'Registration' : 'Login'} failed. Please try again.`);
@@ -211,6 +167,31 @@ const AuthForm = ({ mode }: AuthFormProps) => {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* Name Input - Only for Register */}
+              {isRegister && (
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label htmlFor="name" className="sr-only">
+                        Full Name
+                      </Label>
+                      <FormControl>
+                        <Input
+                          id="name"
+                          type="text"
+                          placeholder="Full Name"
+                          className="bg-gray-800/50 border-gray-600 p-4 text-white placeholder:text-gray-400 focus:border-red-500 focus:ring-red-500"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-400 text-sm" />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               {/* Email/Phone Input */}
               <FormField
                 control={form.control}

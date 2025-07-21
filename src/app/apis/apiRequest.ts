@@ -34,7 +34,7 @@ const apiRequest = async <T>(
       config.body = JSON.stringify(data);
     }
 
-    const response = await fetch(`https://backend-9x9.onrender.com/api${endpoint}`, config);
+    const response = await fetch(`https://e-commerce-be-9tqp.onrender.com/${endpoint}`, config);
 
     if (!response.ok) {
       let errorMessage = `HTTP error! status: ${response.status}`;

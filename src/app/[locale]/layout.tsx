@@ -1,8 +1,9 @@
 import { sfPro } from '@/app/fonts/sfPro';
+import Footer from '@/components/header-footer/Footer';
+import Header from '@/components/header-footer/Header';
 import { Toaster } from '@/components/ui/sonner';
 import { routing } from '@/libs/i18nRouting';
 import '@/styles/global.css';
-import RootTemplate from '@/templates/RootTemplate';
 import type { Metadata, Viewport } from 'next';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
@@ -57,20 +58,22 @@ export default async function RootLayout(props: {
   return (
     <html lang={locale} className={sfPro.variable}>
       <body className="min-h-screen">
-        <NextIntlClientProvider>
-          <RootTemplate>
+        <Header />
+        <div className="pb-16">
+          <NextIntlClientProvider>
             {props.children}
-          </RootTemplate>
-          <Toaster
-            position="top-center"
-            toastOptions={{
-              style: {
-                color: 'white',
-                background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)',
-              },
-            }}
-          />
-        </NextIntlClientProvider>
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                style: {
+                  color: 'white',
+                  background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)',
+                },
+              }}
+            />
+          </NextIntlClientProvider>
+        </div>
+        <Footer />
       </body>
     </html>
   );
