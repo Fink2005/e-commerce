@@ -1,64 +1,57 @@
-'use client';
-import ControllerIcon from '@/libs/shared/icons/Controller';
-import HouseIcon from '@/libs/shared/icons/House';
-import HumanIcon from '@/libs/shared/icons/Human';
-import NotesIcon from '@/libs/shared/icons/Notes';
-import QuestionIcon from '@/libs/shared/icons/Question';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+"use client"
 
-const tabBar = [
-  {
-    icon: HouseIcon,
-    title: 'Trang chủ',
-    to: '/',
-  },
-  {
-    icon: HumanIcon,
-    title: 'Thần số học',
-    to: '/numerology',
-  },
-  {
-    icon: ControllerIcon,
-    title: 'Đào vàng',
-    to: '#',
-  },
-  {
-    icon: NotesIcon,
-    title: 'Bảng xếp hạng',
-    to: '/ranking',
-  },
-  {
-    icon: QuestionIcon,
-    title: 'Nhiệm vụ',
-    to: '#',
-  },
-];
+import { cn } from "@/lib/utils"
+import { Compass, Home, Package, User } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
-export function Footer() {
-  const pathName = usePathname();
+export default function MobileFooterNav() {
+  const pathname = usePathname()
+
+  const navItems = [
+    {
+      name: "Home",
+      href: "/",
+      icon: Home,
+    },
+    {
+      name: "Explore",
+      href: "/products",
+      icon: Compass,
+    },
+    {
+      name: "Package",
+      href: "/customize-package",
+      icon: Package,
+    },
+    {
+      name: "Profile",
+      href: "/profile",
+      icon: User,
+    },
+  ]
+
   return (
-    <footer
-      className="absolute bottom-0 w-full flex "
-      style={{
-        paddingBottom: 'env(safe-area-inset-bottom)'
-      }}
-    >
-      {
-        tabBar.map((item) => {
-          const Icon = item.icon;
+    <footer className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t shadow-lg md:hidden">
+      <nav className="flex justify-around items-center h-16 px-4">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href
           return (
-            <Link href={item.to} key={item.title} className={` flex-1 flex justify-center flex-col items-center space-y-2 ${pathName === item.to ? '' : 'opacity-50'}`}>
-              <Icon />
-              <span
-                className="text-white font-[500] text-[0.5625rem]"
-              >
-                {item.title}
-              </span>
+            <Link
+              key={item.name}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center gap-1 text-xs font-medium transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground",
+              )}
+              aria-label={item.name}
+            >
+              <item.icon className="h-5 w-5" />
+              <span>{item.name}</span>
             </Link>
-          );
-        })
-      }
+          )
+        })}
+      </nav>
     </footer>
-  );
+  )
 }
