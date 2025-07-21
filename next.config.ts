@@ -7,6 +7,12 @@ const baseConfig: NextConfig = {
   },
   poweredByHeader: false,
   reactStrictMode: true,
+  rewrites: async () => [
+    {
+      source: '/request/:path*',
+      destination: `${process.env.API_BASE_SERVER}/:path*`, // Proxy to the API request handler
+    },
+  ],
   serverExternalPackages: ['@electric-sql/pglite'],
   images: {
     remotePatterns: [

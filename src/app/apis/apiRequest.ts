@@ -10,7 +10,9 @@ interface ApiRequestConfig {
 interface ApiError extends Error {
   message: string;
 }
-
+const baseURL = typeof window === 'undefined'
+  ? process.env.API_BASE_SERVER // server-side
+  : process.env.NEXT_PUBLIC_API_BASE_CLIENT; // client-side
 const apiRequest = async <T>(
   endpoint: string,
   method: HttpMethod = 'GET',
@@ -18,7 +20,7 @@ const apiRequest = async <T>(
   headers: Record<string, string> = {},
 ): Promise<T | null> => {
   try {
-    const url = `https://e-commerce-be-9tqp.onrender.com/${endpoint}`;
+    const url = `${baseURL}/${endpoint}`;
 
     const config: ApiRequestConfig = {
       method,

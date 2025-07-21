@@ -64,7 +64,10 @@ export default async function middleware(
   request: NextRequest,
 ) {
   const pathname = request.nextUrl.pathname;
-
+  // Skip middleware for specific paths
+  if (pathname.startsWith('/request')) {
+    return NextResponse.next();
+  }
   // Add pathname to headers for recognition
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
