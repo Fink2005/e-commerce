@@ -23,10 +23,10 @@ export default function CustomizePackage() {
 
   const currentMobileDataCost = mobileDataGb * mobileDataPricePerGb;
   const currentBroadbandCost = broadbandMbps * broadbandPricePerMbps;
-  const currentAddOnsCost =
-    (isStreamingChecked ? addOnPrice : 0) +
-    (isSecurityChecked ? addOnPrice : 0) +
-    (isInternationalChecked ? addOnPrice : 0);
+  const currentAddOnsCost
+    = (isStreamingChecked ? addOnPrice : 0)
+      + (isSecurityChecked ? addOnPrice : 0)
+      + (isInternationalChecked ? addOnPrice : 0);
 
   const newTotalMonthly = useMemo(() => {
     return basePlanCost + currentMobileDataCost + currentBroadbandCost + currentAddOnsCost;
@@ -80,7 +80,10 @@ export default function CustomizePackage() {
                 <Label htmlFor="mobile-data-amount" className="text-gray-900">
                   Data Amount
                 </Label>
-                <span className="font-medium text-gray-900">{mobileDataGb}GB</span>
+                <span className="font-medium text-gray-900">
+                  {mobileDataGb}
+                  GB
+                </span>
               </div>
               <Slider
                 id="mobile-data-amount"
@@ -95,7 +98,11 @@ export default function CustomizePackage() {
                 <span>5GB</span>
                 <span>100GB</span>
               </div>
-              <p className="text-sm text-gray-600">Additional data: +${mobileDataPricePerGb}/GB</p>
+              <p className="text-sm text-gray-600">
+                Additional data: +$
+                {mobileDataPricePerGb}
+                /GB
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -112,7 +119,10 @@ export default function CustomizePackage() {
                 <Label htmlFor="broadband-data-amount" className="text-gray-900">
                   Data Amount
                 </Label>
-                <span className="font-medium text-gray-900">{broadbandMbps}Mbps</span>
+                <span className="font-medium text-gray-900">
+                  {broadbandMbps}
+                  Mbps
+                </span>
               </div>
               <Slider
                 id="broadband-data-amount"
@@ -127,7 +137,11 @@ export default function CustomizePackage() {
                 <span>25Mbps</span>
                 <span>500Mbps</span>
               </div>
-              <p className="text-sm text-gray-600">Additional speed: +${broadbandPricePerMbps}/Mbps</p>
+              <p className="text-sm text-gray-600">
+                Additional speed: +$
+                {broadbandPricePerMbps}
+                /Mbps
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -145,7 +159,10 @@ export default function CustomizePackage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-900">+${addOnPrice}</span>
+                <span className="text-sm font-medium text-gray-900">
+                  +$
+                  {addOnPrice}
+                </span>
                 <Checkbox id="streaming" checked={isStreamingChecked} onCheckedChange={setIsStreamingChecked} />
               </div>
             </div>
@@ -158,7 +175,10 @@ export default function CustomizePackage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-900">+${addOnPrice}</span>
+                <span className="text-sm font-medium text-gray-900">
+                  +$
+                  {addOnPrice}
+                </span>
                 <Checkbox id="security" checked={isSecurityChecked} onCheckedChange={setIsSecurityChecked} />
               </div>
             </div>
@@ -171,7 +191,10 @@ export default function CustomizePackage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-900">+${addOnPrice}</span>
+                <span className="text-sm font-medium text-gray-900">
+                  +$
+                  {addOnPrice}
+                </span>
                 <Checkbox
                   id="international"
                   checked={isInternationalChecked}
@@ -189,33 +212,68 @@ export default function CustomizePackage() {
             <div className="bg-green-50 p-4 rounded-lg border border-green-100">
               <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
                 <div>Base Plan</div>
-                <div className="text-right font-medium">${basePlanCost}</div>
-                <div>Mobile Data ({mobileDataGb} GB)</div>
-                <div className="text-right font-medium">+${currentMobileDataCost}</div>
-                <div>Broadband ({broadbandMbps} Mbps)</div>
-                <div className="text-right font-medium">+${currentBroadbandCost}</div>
+                <div className="text-right font-medium">
+                  $
+                  {basePlanCost}
+                </div>
+                <div>
+                  Mobile Data (
+                  {mobileDataGb}
+                  {' '}
+                  GB)
+                </div>
+                <div className="text-right font-medium">
+                  +$
+                  {currentMobileDataCost}
+                </div>
+                <div>
+                  Broadband (
+                  {broadbandMbps}
+                  {' '}
+                  Mbps)
+                </div>
+                <div className="text-right font-medium">
+                  +$
+                  {currentBroadbandCost}
+                </div>
                 {isStreamingChecked && (
                   <>
                     <div>Streaming Package</div>
-                    <div className="text-right font-medium">+${addOnPrice}</div>
+                    <div className="text-right font-medium">
+                      +$
+                      {addOnPrice}
+                    </div>
                   </>
                 )}
                 {isSecurityChecked && (
                   <>
                     <div>Security Suite</div>
-                    <div className="text-right font-medium">+${addOnPrice}</div>
+                    <div className="text-right font-medium">
+                      +$
+                      {addOnPrice}
+                    </div>
                   </>
                 )}
                 {isInternationalChecked && (
                   <>
                     <div>International Calls</div>
-                    <div className="text-right font-medium">+${addOnPrice}</div>
+                    <div className="text-right font-medium">
+                      +$
+                      {addOnPrice}
+                    </div>
                   </>
                 )}
                 <div className="col-span-2 border-t border-gray-200 pt-2 mt-2" />
                 <div className="font-bold text-gray-900">Total Monthly</div>
-                <div className="text-right font-bold text-gray-900">${newTotalMonthly}</div>
-                <div className="text-sm text-gray-600">Current: ${currentPlanCost}.00</div>
+                <div className="text-right font-bold text-gray-900">
+                  $
+                  {newTotalMonthly}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Current: $
+                  {currentPlanCost}
+                  .00
+                </div>
                 <div
                   className={`text-right text-sm font-medium ${costDifference < 0 ? 'text-green-600' : 'text-red-600'}`}
                 >
@@ -228,7 +286,9 @@ export default function CustomizePackage() {
       </div>
       <div className="mt-6 space-y-3 max-w-md mx-auto w-full">
         <Button className="w-full h-12 text-base font-medium bg-red-600 hover:bg-red-700 text-white">
-          Update Package - ${newTotalMonthly}/month
+          Update Package - $
+          {newTotalMonthly}
+          /month
         </Button>
         <Button
           variant="outline"

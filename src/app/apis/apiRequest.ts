@@ -1,11 +1,10 @@
-import { clearAuthCookies, createCookie, getCookie } from '@/app/actions/cookie';
-
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 interface ApiRequestConfig {
   method: HttpMethod;
   headers: Record<string, string>;
   body?: string;
+  credentials: 'include';
 }
 
 interface ApiError extends Error {
@@ -19,14 +18,13 @@ const apiRequest = async <T>(
   headers: Record<string, string> = {},
 ): Promise<T | null> => {
   try {
-    const authData = await getCookie('authData');
-    const accessToken = authData ? JSON.parse(authData)?.accessToken : undefined;
+    const url = `https://e-commerce-be-9tqp.onrender.com/${endpoint}`;
 
     const config: ApiRequestConfig = {
       method,
+      credentials: 'include', // Required to send/receive cookies
       headers: {
         'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
         ...headers,
       },
     };
@@ -35,112 +33,26 @@ const apiRequest = async <T>(
       config.body = JSON.stringify(data);
     }
 
-    let response = await fetch(`https://e-commerce-be-9tqp.onrender.com/${endpoint}`, config);
+    const response = await fetch(url, config);
 
-    // Check if backend says token is expired (you can adjust the condition based on your backend response)
-    if (!response.ok && response.status === 401 && accessToken && !endpoint.includes('auth/login') && !endpoint.includes('auth/register')) {
-      try {
-        const errorData = await response.json();
+    // Handle authentication errors
+    if (!response.ok && response.status === 401) {
+      // For auth endpoints, throw the error directly
+      if (endpoint.includes('auth/login') || endpoint.includes('auth/register')) {
+        let errorMessage = 'Authentication failed';
 
-        // If backend indicates token is expired (adjust this condition based on your backend)
-        if (errorData.isLogin === false || errorData.message?.includes('expired') || errorData.message?.includes('invalid token')) {
-          const refreshToken = await getCookie('refreshToken');
-
-          if (refreshToken) {
-            // Try to refresh the token
-            const refreshResponse = await fetch('https://e-commerce-be-9tqp.onrender.com/auth/refresh-token', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ refreshToken }),
-            });
-
-            if (refreshResponse.ok) {
-              const { accessToken: newAccessToken, refreshToken: newRefreshToken } = await refreshResponse.json();
-
-              // Update cookies with new tokens
-              const currentAuthData = await getCookie('authData');
-              if (currentAuthData) {
-                const parsedAuthData = JSON.parse(currentAuthData);
-                parsedAuthData.accessToken = newAccessToken;
-
-                await createCookie({
-                  name: 'authData',
-                  value: JSON.stringify(parsedAuthData),
-                  maxAge: 15 * 60, // 15 minutes
-                });
-              }
-
-              await createCookie({
-                name: 'refreshToken',
-                value: newRefreshToken,
-                maxAge: 7 * 24 * 60 * 60, // 7 days
-              });
-
-              // Retry original request with new token
-              config.headers.Authorization = `Bearer ${newAccessToken}`;
-              response = await fetch(`https://e-commerce-be-9tqp.onrender.com/${endpoint}`, config);
-            } else {
-              // Refresh failed, clear cookies and throw error
-              await clearAuthCookies();
-              throw new Error('Session expired. Please login again.');
-            }
-          } else {
-            // No refresh token, clear cookies and throw error
-            await clearAuthCookies();
-            throw new Error('Session expired. Please login again.');
-          }
-        } else {
-          // Re-throw the original error if it's not about token expiration
-          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // If can't parse, use default message
         }
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      } catch (parseError) {
-        // If we can't parse the error response, treat it as a general auth error
-        const refreshToken = await getCookie('refreshToken');
-        if (refreshToken) {
-          // Try refresh anyway
-          const refreshResponse = await fetch('https://e-commerce-be-9tqp.onrender.com/auth/refresh-token', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ refreshToken }),
-          });
 
-          if (refreshResponse.ok) {
-            const { accessToken: newAccessToken, refreshToken: newRefreshToken } = await refreshResponse.json();
-
-            const currentAuthData = await getCookie('authData');
-            if (currentAuthData) {
-              const parsedAuthData = JSON.parse(currentAuthData);
-              parsedAuthData.accessToken = newAccessToken;
-
-              await createCookie({
-                name: 'authData',
-                value: JSON.stringify(parsedAuthData),
-                maxAge: 15 * 60,
-              });
-            }
-
-            await createCookie({
-              name: 'refreshToken',
-              value: newRefreshToken,
-              maxAge: 7 * 24 * 60 * 60,
-            });
-
-            config.headers.Authorization = `Bearer ${newAccessToken}`;
-            response = await fetch(`https://e-commerce-be-9tqp.onrender.com/${endpoint}`, config);
-          } else {
-            await clearAuthCookies();
-            throw new Error('Session expired. Please login again.');
-          }
-        } else {
-          await clearAuthCookies();
-          throw new Error('Session expired. Please login again.');
-        }
+        throw new Error(errorMessage);
       }
+
+      // For other endpoints, throw session expired error
+      throw new Error('Session expired. Please login again.');
     }
 
     if (!response.ok) {
@@ -148,9 +60,24 @@ const apiRequest = async <T>(
 
       try {
         const errorData = await response.json();
-        errorMessage = errorData.message || errorMessage;
-      } catch {
+
+        // Handle 422 validation errors (structured message array)
+        if (response.status === 422 && errorData.message && Array.isArray(errorData.message)) {
+          const firstError = errorData.message[0];
+          errorMessage = firstError.message || errorData.error || errorMessage;
+        } else if (response.status === 409) {
+          // Handle 409 conflict
+          errorMessage = errorData.message || 'User already exists';
+        } else if (errorData.message && typeof errorData.message === 'string') {
+          // Handle other errors with message field
+          errorMessage = errorData.message;
+        } else if (errorData.error && typeof errorData.error === 'string') {
+          // Handle errors with error field
+          errorMessage = errorData.error;
+        }
+      } catch (parseError) {
         // If response is not JSON, use default error message
+        console.error('Failed to parse error response:', parseError);
       }
 
       const error = new Error(errorMessage) as ApiError;
@@ -165,7 +92,7 @@ const apiRequest = async <T>(
     // Handle non-JSON responses
     return null;
   } catch (error) {
-    console.error(`API request failed for ${endpoint}:`, (error as ApiError).message);
+    console.error(`❌ API request failed for ${endpoint}:`, (error as ApiError).message);
     throw error;
   }
 };

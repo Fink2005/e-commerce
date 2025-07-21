@@ -59,49 +59,100 @@ const AuthForm = ({ mode }: AuthFormProps) => {
           password: registerData.password,
         });
 
-        if (response && response.id) {
-          await createCookie({
-            name: 'userData',
-            value: JSON.stringify(response),
-            maxAge: 30 * 24 * 60 * 60, // 30 days
-          });
-          toast.success('Registration successful!');
-          router.push('/login');
+        // Check for success response from your backend
+        if (response && (response.success || response.id)) {
+          // Store user data (if available)
+          if (response.id) {
+            await createCookie({
+              name: 'userData',
+              value: JSON.stringify({
+                user: {
+                  id: response.id,
+                  name: response.name || registerData.name,
+                  email: response.email || registerData.email,
+                  created_at: response.created_at,
+                  updated_at: response.updated_at,
+                },
+              }),
+              maxAge: 30 * 24 * 60 * 60, // 30 days
+            });
+          }
+
+          // Automatically send verification email after successful registration
+          try {
+            const emailSent = await authRequests.sendConfirmationEmail(registerData.email);
+
+            if (emailSent) {
+              toast.success('Registration successful! Please check your email to verify your account.');
+            } else {
+              toast.success('Registration successful! Please request verification email.');
+            }
+          // eslint-disable-next-line unused-imports/no-unused-vars
+          } catch (emailError) {
+            toast.success('Registration successful! Please request verification email.');
+          }
+
+          // Redirect to verify email page with email parameter
+          router.push(`/verify-email?email=${encodeURIComponent(registerData.email)}`);
+        } else {
+          throw new Error('Registration failed');
         }
       } else {
-      // Login
+        // Login
         const loginData = data as LoginFormData;
         const response = await authRequests.login({
           email: loginData.email,
           password: loginData.password,
         });
 
-        if (response && response.accessToken) {
-        // Store tokens using your existing cookie functions
-          await createCookie({
-            name: 'accessToken',
-            value: response.accessToken,
-            maxAge: 15 * 60, // 15 minutes
-          });
-
-          await createCookie({
-            name: 'refreshToken',
-            value: response.refreshToken,
-            maxAge: 7 * 24 * 60 * 60, // 7 days
-          });
-
+        if (response && response.role) {
           toast.success('Welcome back!');
-          router.push('/');
+
+          // Redirect based on role and email confirmation
+          if (response.role === 'ADMIN') {
+            router.push('/admin');
+          } else if (!response.isEmailConfirmed) {
+            router.push(`/verify-email?email=${encodeURIComponent(loginData.email)}`);
+          } else {
+            router.push('/');
+          }
+        } else {
+          throw new Error('Login failed - no response received');
         }
       }
     } catch (error: any) {
-    // Your existing error handling
       if (error.message === 'Invalid credentials') {
-        toast.error('Invalid email or password.');
-      } else if (error.message === 'User already exists') {
-        toast.error('User already exists.');
+        if (isLogin) {
+          toast.error('Invalid email or password. Please try again.');
+          // Highlight both email and password fields
+          form.setError('email', {
+            type: 'manual',
+            message: 'Invalid email',
+          });
+          form.setError('password', {
+            type: 'manual',
+            message: 'Invalid password',
+          });
+        } else {
+          // For registration, this shouldn't happen, but handle it
+          toast.error('Registration failed. Please try again.');
+        }
+      } else if (error.message === 'Email already exists' || error.message === 'User already exists') {
+        toast.error('An account with this email already exists. Please use a different email or try logging in.');
+        form.setError('email', {
+          type: 'manual',
+          message: 'Email already exists',
+        });
+      } else if (error.message && error.message.includes('expired')) {
+        toast.error('Your session has expired. Please login again.');
+        router.push('/login');
       } else {
-        toast.error('Something went wrong.');
+        // Generic error - show the actual error message if available
+        const errorMessage = error.message || `${isRegister ? 'Registration' : 'Login'} failed. Please try again.`;
+        toast.error(errorMessage);
+
+        // Log for debugging
+        console.error('Unhandled error:', error);
       }
     } finally {
       setIsLoading(false);

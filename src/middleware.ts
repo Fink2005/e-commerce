@@ -6,17 +6,42 @@ import { routing } from './libs/i18nRouting';
 const handleI18nRouting = createMiddleware(routing);
 
 const isProtectedRoute = (pathname: string): boolean => {
-  return pathname.startsWith('/numerology') || pathname.startsWith('/ranking');
+  return pathname.startsWith('/profile')
+    || pathname.startsWith('/account')
+    || pathname.startsWith('/orders')
+    || pathname.startsWith('/wishlist')
+    || pathname.startsWith('/dashboard')
+    || pathname.startsWith('/settings');
+};
+
+const isAdminRoute = (pathname: string): boolean => {
+  return pathname.startsWith('/admin');
 };
 
 const isAuthPage = (pathname: string): boolean => {
-  return pathname.startsWith('/login') || pathname.startsWith('/verify-email');
+  return pathname.startsWith('/login')
+    || pathname.startsWith('/register')
+    || pathname.startsWith('/verify-email')
+    || pathname.startsWith('/forgot-password');
 };
 
 const isWelcomePage = (pathname: string): boolean => {
   return pathname.startsWith('/welcome')
     || pathname.startsWith('/introduction')
     || pathname.startsWith('/policy-terms');
+};
+
+const isPublicRoute = (pathname: string): boolean => {
+  return pathname === '/'
+    || pathname.startsWith('/products')
+    || pathname.startsWith('/product/'); // Individual product pages
+};
+
+// Routes that require authentication before proceeding (like checkout)
+const isCheckoutRoute = (pathname: string): boolean => {
+  return pathname.startsWith('/checkout')
+    || pathname.startsWith('/payment')
+    || pathname.startsWith('/cart/checkout');
 };
 
 // Improve security with Arcjet
@@ -45,9 +70,26 @@ export default async function middleware(
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
 
-  // Check wallet authentication
+  // Get authentication data from cookies (set by backend)
   const authDataCookie = request.cookies.get('authData');
-  const isAuthenticated = authDataCookie ? JSON.parse(authDataCookie.value)?.user.isKyc : undefined;
+  let isAuthenticated = false;
+  let userRole = null;
+  let isEmailConfirmed = false;
+
+  if (authDataCookie) {
+    try {
+      const authData = JSON.parse(authDataCookie.value);
+      isAuthenticated = !!authData?.user;
+      userRole = authData?.user?.role;
+      isEmailConfirmed = authData?.user?.isEmailConfirmed;
+    } catch (error) {
+      console.error('Error parsing authData cookie:', error);
+      // Clear invalid cookie
+      const response = NextResponse.next();
+      response.cookies.delete('authData');
+      return response;
+    }
+  }
 
   // Create a new request with custom headers
   const requestWithHeaders = new NextRequest(request.url, {
@@ -55,7 +97,7 @@ export default async function middleware(
     headers: requestHeaders,
   });
 
-  // Verify the request with Arcjet
+  // Verify the request with Arcjet (for all routes)
   if (process.env.ARCJET_KEY) {
     const decision = await aj.protect(request);
 
@@ -64,19 +106,93 @@ export default async function middleware(
     }
   }
 
-  // Handle authentication logic
-  if (isProtectedRoute(pathname)) {
-    if (!isAuthenticated) {
-      // Redirect to login if not authenticated
-      const loginUrl = new URL('/login', request.url);
+  // Allow all public routes without authentication (like Amazon/Shopee)
+  if (isPublicRoute(pathname)) {
+    return handleI18nRouting(requestWithHeaders);
+  }
+
+  // Handle admin route protection
+  if (isAdminRoute(pathname)) {
+    if (!isAuthenticated || userRole !== 'ADMIN') {
+      const loginUrl = new URL(`/login?redirect=${encodeURIComponent(pathname)}`, request.url);
       return NextResponse.redirect(loginUrl);
     }
   }
 
-  // Redirect authenticated users away from auth/welcome pages
-  if (((isAuthPage(pathname)) && isAuthenticated) || (isWelcomePage(pathname) && isAuthenticated)) {
-    const homeUrl = new URL('/', request.url);
-    return NextResponse.redirect(homeUrl);
+  // Handle checkout routes - require authentication but show login prompt
+  if (isCheckoutRoute(pathname)) {
+    if (!isAuthenticated) {
+      // Redirect to login with return URL for checkout
+      const loginUrl = new URL(`/login?redirect=${encodeURIComponent(pathname)}&action=checkout`, request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Check email confirmation for checkout
+    if (!isEmailConfirmed) {
+      const verifyUrl = new URL(`/verify-email?redirect=${encodeURIComponent(pathname)}`, request.url);
+      return NextResponse.redirect(verifyUrl);
+    }
+  }
+
+  // Handle protected routes (user account features)
+  if (isProtectedRoute(pathname)) {
+    if (!isAuthenticated) {
+      // Redirect to login with return URL
+      const loginUrl = new URL(`/login?redirect=${encodeURIComponent(pathname)}`, request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Check if email is confirmed for account features
+    if (!isEmailConfirmed) {
+      const verifyUrl = new URL(`/verify-email?redirect=${encodeURIComponent(pathname)}`, request.url);
+      return NextResponse.redirect(verifyUrl);
+    }
+  }
+
+  // Redirect authenticated users away from auth pages
+  if (isAuthPage(pathname) && isAuthenticated) {
+    // Check for redirect parameter first
+    const redirectParam = request.nextUrl.searchParams.get('redirect');
+
+    if (redirectParam) {
+      // If email confirmed, go to original destination
+      if (isEmailConfirmed) {
+        const redirectUrl = new URL(redirectParam, request.url);
+        return NextResponse.redirect(redirectUrl);
+      }
+      // If email not confirmed and trying to access verify-email, allow it
+      if (!isEmailConfirmed && pathname.startsWith('/verify-email')) {
+        return handleI18nRouting(requestWithHeaders);
+      }
+    }
+
+    // Default redirects for authenticated users on auth pages
+    if (userRole === 'ADMIN') {
+      const adminUrl = new URL('/admin', request.url);
+      return NextResponse.redirect(adminUrl);
+    }
+
+    // If email not confirmed, allow access to verify-email page
+    if (!isEmailConfirmed && pathname.startsWith('/verify-email')) {
+      return handleI18nRouting(requestWithHeaders);
+    }
+
+    // If email is confirmed, redirect to home
+    if (isEmailConfirmed) {
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
+    }
+  }
+
+  // Redirect authenticated users away from welcome pages
+  if (isWelcomePage(pathname) && isAuthenticated) {
+    if (userRole === 'ADMIN') {
+      const adminUrl = new URL('/admin', request.url);
+      return NextResponse.redirect(adminUrl);
+    } else {
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
+    }
   }
 
   // Apply i18n routing
