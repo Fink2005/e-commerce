@@ -18,7 +18,7 @@ interface Product {
 
 const Page = () => {
   return (
-    <div className="min-h-screen w-full max-w-md mx-auto py-4 flex flex-col space-y-2">
+    <div className="min-h-screen w-full max-w-md mx-auto flex flex-col space-y-2 p-4">
       <VoucherCarousel />
       <CategoryBrowser />
       <FeatureBrowser />
