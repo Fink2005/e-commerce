@@ -36,8 +36,16 @@ export function useAuth() {
     try {
       const response = await authRequests.login(credentials);
 
-      if (response?.result) {
-        const { accessToken, refreshToken, user } = response.result;
+      // Fixed: Remove .result since API returns tokens directly
+      if (response && response.accessToken) {
+        const { accessToken, refreshToken } = response;
+
+        // Create user object from login credentials since API doesn't return user info
+        const user: User = {
+          id: '', // You might need to decode JWT or get from another endpoint
+          username: credentials.email,
+          email: credentials.email,
+        };
 
         // Store tokens in httpOnly cookies
         await createCookie({

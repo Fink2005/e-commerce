@@ -3,20 +3,22 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Textarea } from '@/components/ui/textarea';
-import { Download, Mail } from 'lucide-react';
-import { useState } from 'react';
+import { Eye, Mail, MoreHorizontal } from 'lucide-react';
 
 interface Enquiry {
   id: string;
   customer: string;
   subject: string;
-  status: string;
+  status: 'pending' | 'responded' | 'closed';
   date: string;
-  priority: string;
+  priority: 'low' | 'medium' | 'high';
 }
 
 interface EnquiriesTableProps {
@@ -24,34 +26,58 @@ interface EnquiriesTableProps {
 }
 
 export function EnquiriesTable({ enquiries }: EnquiriesTableProps) {
-  const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'responded':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'closed':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'low':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const handleViewEnquiry = (enquiry: Enquiry) => {
+    // Add view logic here
+    console.warn('Viewing enquiry:', enquiry);
+  };
+
+  const handleRespondEnquiry = (enquiry: Enquiry) => {
+    // Add respond logic here
+    console.warn('Responding to enquiry:', enquiry);
+  };
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader>
         <CardTitle>Customer Enquiries</CardTitle>
-        <div className="flex space-x-2">
-          <Button className="bg-red-500 hover:bg-red-600 text-white">
-            <Mail className="h-4 w-4 mr-2" />
-            Respond to Enquiry
-          </Button>
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export Enquiries
-          </Button>
-        </div>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Enquiry ID</TableHead>
+              <TableHead>ID</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Subject</TableHead>
-              <TableHead>Priority</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Priority</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -61,62 +87,34 @@ export function EnquiriesTable({ enquiries }: EnquiriesTableProps) {
                 <TableCell>{enquiry.customer}</TableCell>
                 <TableCell>{enquiry.subject}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant={enquiry.priority === 'high' ? 'destructive' : 'secondary'}
-                    className={enquiry.priority === 'high' ? 'bg-red-100 text-red-700' : ''}
-                  >
-                    {enquiry.priority}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant={enquiry.status === 'pending' ? 'destructive' : 'secondary'}
-                    className={enquiry.status === 'pending' ? 'bg-red-100 text-red-700' : ''}
-                  >
+                  <Badge variant="outline" className={getStatusColor(enquiry.status)}>
                     {enquiry.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{enquiry.date}</TableCell>
                 <TableCell>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        size="sm"
-                        className="bg-red-500 hover:bg-red-600 text-white"
-                        onClick={() => setSelectedEnquiry(enquiry)}
-                      >
-                        Respond
+                  <Badge variant="outline" className={getPriorityColor(enquiry.priority)}>
+                    {enquiry.priority}
+                  </Badge>
+                </TableCell>
+                <TableCell>{enquiry.date}</TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                      <DialogHeader>
-                        <DialogTitle>
-                          Respond to Enquiry -
-                          {enquiry.id}
-                        </DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label>
-                            Customer:
-                            {enquiry.customer}
-                          </Label>
-                          <p className="text-sm text-gray-600">
-                            Subject:
-                            {enquiry.subject}
-                          </p>
-                        </div>
-                        <div>
-                          <Label htmlFor="response">Response</Label>
-                          <Textarea id="response" placeholder="Type your response here..." className="min-h-32" />
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                          <Button variant="outline">Save Draft</Button>
-                          <Button className="bg-red-500 hover:bg-red-600 text-white">Send Response</Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleViewEnquiry(enquiry)}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleRespondEnquiry(enquiry)}>
+                        <Mail className="mr-2 h-4 w-4" />
+                        Respond
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
