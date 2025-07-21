@@ -6,11 +6,11 @@ import { routing } from './libs/i18nRouting';
 const handleI18nRouting = createMiddleware(routing);
 
 const isProtectedRoute = (pathname: string): boolean => {
-  return pathname.startsWith('/numerology') || pathname.startsWith('/ranking');
+  return pathname.startsWith('/numerology') || pathname.startsWith('/') || pathname.startsWith('/ranking');
 };
 
 const isAuthPage = (pathname: string): boolean => {
-  return pathname.startsWith('/login') || pathname.startsWith('/verify-email') || pathname.startsWith('/verified') || pathname.startsWith('/kyc');
+  return pathname.startsWith('/login') || pathname.startsWith('/verify-email');
 };
 
 const isWelcomePage = (pathname: string): boolean => {

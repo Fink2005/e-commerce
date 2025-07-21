@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { createCookie } from '@/app/actions/cookie';
 import authRequests from '@/app/apis/requests/auth';
 import type { LoginFormData, RegisterFormData } from '@/app/schema/auth';
-import { formatZodErrors, getValidationSchema } from '@/app/schema/auth';
+import { getValidationSchema } from '@/app/schema/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
@@ -60,26 +60,16 @@ const AuthForm = ({ mode }: AuthFormProps) => {
         });
 
         if (response && response.id) {
-          // Store user data using createCookie
           await createCookie({
-            name: 'authData',
-            value: JSON.stringify({
-              user: {
-                id: response.id,
-                name: response.name,
-                email: response.email,
-                created_at: response.created_at,
-                updated_at: response.updated_at,
-              },
-            }),
+            name: 'userData',
+            value: JSON.stringify(response),
             maxAge: 30 * 24 * 60 * 60, // 30 days
           });
-
-          toast.success('Registration successful! Welcome to CheapDeals!');
-          router.push('/login'); // Redirect to login after successful registration
+          toast.success('Registration successful!');
+          router.push('/login');
         }
       } else {
-        // Login logic remains the same
+      // Login
         const loginData = data as LoginFormData;
         const response = await authRequests.login({
           email: loginData.email,
@@ -87,25 +77,17 @@ const AuthForm = ({ mode }: AuthFormProps) => {
         });
 
         if (response && response.accessToken) {
-          // Store auth data using createCookie
+        // Store tokens using your existing cookie functions
           await createCookie({
-            name: 'authData',
-            value: JSON.stringify({
-              user: {
-                id: '',
-                username: loginData.email,
-                email: loginData.email,
-              },
-              accessToken: response.accessToken,
-            }),
-            maxAge: 3600, // 1 hour for access token
+            name: 'accessToken',
+            value: response.accessToken,
+            maxAge: 15 * 60, // 15 minutes
           });
 
-          // Store refresh token separately
           await createCookie({
             name: 'refreshToken',
             value: response.refreshToken,
-            maxAge: 7 * 24 * 60 * 60, // 7 days for refresh token
+            maxAge: 7 * 24 * 60 * 60, // 7 days
           });
 
           toast.success('Welcome back!');
@@ -113,32 +95,13 @@ const AuthForm = ({ mode }: AuthFormProps) => {
         }
       }
     } catch (error: any) {
-      if (error.name === 'ZodError') {
-        const formattedErrors = formatZodErrors(error);
-        Object.entries(formattedErrors).forEach(([field, message]) => {
-          form.setError(field as keyof (LoginFormData | RegisterFormData), {
-            type: 'manual',
-            message,
-          });
-        });
-      } else if (error.message === 'Invalid credentials') {
-        toast.error('Invalid email or password. Please try again.');
-        form.setError('email', {
-          type: 'manual',
-          message: 'Invalid credentials',
-        });
-        form.setError('password', {
-          type: 'manual',
-          message: 'Invalid credentials',
-        });
+    // Your existing error handling
+      if (error.message === 'Invalid credentials') {
+        toast.error('Invalid email or password.');
       } else if (error.message === 'User already exists') {
-        toast.error('An account with this email already exists. Please use a different email or try logging in.');
-        form.setError('email', {
-          type: 'manual',
-          message: 'User already exists',
-        });
+        toast.error('User already exists.');
       } else {
-        toast.error(error.message || `${isRegister ? 'Registration' : 'Login'} failed. Please try again.`);
+        toast.error('Something went wrong.');
       }
     } finally {
       setIsLoading(false);

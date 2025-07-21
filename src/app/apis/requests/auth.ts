@@ -19,6 +19,17 @@ const authRequests = {
       return null;
     }
   },
+
+  async refreshToken(refreshToken: string): Promise<TokenResponse | null> {
+    try {
+      return await apiRequest<TokenResponse>('auth/refresh-token', 'POST', {
+        refreshToken,
+      });
+    } catch (error) {
+      console.error('Refresh token request failed:', error);
+      return null;
+    }
+  },
 };
 
 export default authRequests;
