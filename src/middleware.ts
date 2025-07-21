@@ -77,14 +77,14 @@ export default async function middleware(
   const isAuthenticated = !!accessTokenCookie;
   let userRole = null;
   let isEmailConfirmed = false;
-  let userEmail = '';
+  // const userEmail = '';
 
   if (userInfoCookie) {
     try {
       const userInfo = JSON.parse(userInfoCookie.value);
       userRole = userInfo.role;
       isEmailConfirmed = userInfo.isEmailConfirmed;
-      userEmail = userInfo.email;
+      // userEmail = userInfo.email;
     } catch (error) {
       console.error('Error parsing userInfo cookie:', error);
     }
@@ -105,25 +105,25 @@ export default async function middleware(
     }
   }
 
-  if (pathname.startsWith('/login')) {
-    if (!isAuthenticated) {
-      // No valid session, redirect to login
-      const loginUrl = new URL('/login', request.url);
-      return NextResponse.redirect(loginUrl);
-    }
+  // if (pathname.startsWith('/')) {
+  //   if (!isAuthenticated) {
+  //     // No valid session, redirect to login
+  //     const loginUrl = new URL('/login', request.url);
+  //     return NextResponse.redirect(loginUrl);
+  //   }
 
-    // Redirect based on role and email confirmation (your original logic)
-    if (userRole === 'ADMIN') {
-      const adminUrl = new URL('/admin', request.url);
-      return NextResponse.redirect(adminUrl);
-    } else if (!isEmailConfirmed) {
-      const verifyUrl = new URL(`/verify-email?email=${encodeURIComponent(userEmail)}`, request.url);
-      return NextResponse.redirect(verifyUrl);
-    } else {
-      const homeUrl = new URL('/', request.url);
-      return NextResponse.redirect(homeUrl);
-    }
-  }
+  //   // Redirect based on role and email confirmation (your original logic)
+  //   if (userRole === 'ADMIN') {
+  //     const adminUrl = new URL('/admin', request.url);
+  //     return NextResponse.redirect(adminUrl);
+  //   } else if (!isEmailConfirmed) {
+  //     const verifyUrl = new URL(`/verify-email?email=${encodeURIComponent(userEmail)}`, request.url);
+  //     return NextResponse.redirect(verifyUrl);
+  //   } else {
+  //     const homeUrl = new URL('/', request.url);
+  //     return NextResponse.redirect(homeUrl);
+  //   }
+  // }
 
   // Allow all public routes without authentication (like Amazon/Shopee)
   if (isPublicRoute(pathname)) {

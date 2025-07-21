@@ -50,6 +50,37 @@ const authRequests = {
       return false;
     }
   },
+
+  async forgotPassword(email: string): Promise<boolean> {
+    try {
+      await apiRequest('auth/forgot-password', 'POST', { email });
+      return true;
+    } catch (error) {
+      console.error('Forgot password request failed:', error);
+      throw error; // Re-throw to handle in component
+    }
+  },
+
+  async verifyPasswordResetCode(code: string): Promise<boolean> {
+    try {
+      await apiRequest(`auth/verify-password?code=${code}`, 'GET');
+      return true;
+    } catch (error) {
+      console.error('Password reset code verification failed:', error);
+      throw error;
+    }
+  },
+
+  async setNewPassword(password: string, code: string): Promise<boolean> {
+    try {
+      await apiRequest('auth/new-password', 'POST', { password, code });
+      return true;
+    } catch (error) {
+      console.error('Set new password failed:', error);
+      throw error;
+    }
+  },
+
 };
 
 export default authRequests;
