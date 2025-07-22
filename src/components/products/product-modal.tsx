@@ -67,7 +67,7 @@ export function ProductModal({ product, isOpen, onCloseAction }: ProductModalPro
           </div>
 
           {/* Color Selection */}
-          {product.colors && product.colors.length > 1 && (
+          {product.colors && product?.colors?.length > 1 && (
             <div>
               <Label className="text-base font-semibold">Color</Label>
               <div className="flex items-center space-x-3 mt-3">

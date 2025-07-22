@@ -1,9 +1,11 @@
 // Define a type for your product to ensure consistency
 export interface Product {
   id: number;
+  imgUrl?: string; // Added imgUrl property
   name: string;
   image: string;
   rating: number;
+  description?: string;
   reviewCount: number;
   price: number;
   oldPrice?: number;
