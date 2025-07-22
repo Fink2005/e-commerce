@@ -9,7 +9,7 @@ export default async function MainLayout(props: {
   return (
     <RootTemplate>
       <Header />
-      <div className="pb-16">
+      <div>
         {props.children}
       </div>
       <Footer />

@@ -11,8 +11,6 @@ const Page = () => {
       <CategoryBrowser />
       <FeatureBrowser />
       <ProductList products={products} />
-      {' '}
-      {/* Pass products as a prop */}
     </div>
   );
 };

@@ -56,7 +56,7 @@ export default async function RootLayout(props: {
   return (
     <html lang={locale} className={sfPro.variable}>
       <body className="min-h-screen">
-        <div className="pb-16">
+        <div>
           <NextIntlClientProvider>
             {props.children}
             <Toaster

@@ -1,10 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable jsx-a11y/alt-text */
 'use client';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import type { Product } from '@/lib/products'; // Import Product type
+import type { Product } from '@/lib/products';
+import { useCartStore } from '@/lib/store/cartStore';
 import { ShoppingCart, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import SectionBadge from './SectionBadge';
@@ -15,6 +15,7 @@ interface ProductListProps {
 
 const ProductList = ({ products }: ProductListProps) => {
   const router = useRouter();
+  const addItem = useCartStore(state => state.addItem);
 
   const renderStars = (rating: number) => {
     const stars = [];
@@ -34,21 +35,17 @@ const ProductList = ({ products }: ProductListProps) => {
       <SectionBadge name="Our Products" />
       <h2 className="text-lg font-bold text-gray-900 mt-1 mb-3">Explore Our Products</h2>
 
-      {/* Product Grid */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         {products.map(product => (
           <Card
             key={product.id}
             className="rounded-lg border py-0 border-gray-200 bg-white shadow-sm overflow-hidden cursor-pointer gap-0"
             onClick={() => router.push(`/product-details/${product.id}`)}
           >
-            {/* Product Image Placeholder */}
-            <div className="relative bg-gray-200 h-56 flex items-center justify-center">
-              {/* Placeholder for image */}
-              <img className="w-full h-full rounded-md"></img>
+            <div className="relative bg-gray-200 h-48 flex items-center justify-center">
+              <img className="w-3/4 h-3/4 bg-gray-300 rounded-md"></img>
             </div>
 
-            {/* Product Info Section */}
             <CardContent className="p-4 grid gap-1">
               <h3 className="text-base font-medium text-gray-900">{product.name}</h3>
               <div className="flex items-center gap-1 mb-2">
@@ -74,8 +71,8 @@ const ProductList = ({ products }: ProductListProps) => {
               <Button
                 className="w-full bg-red-500 text-white hover:bg-red-600 mt-4"
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevent card click from triggering
-                  // Add to cart logic here
+                  e.stopPropagation();
+                  addItem(product);
                 }}
               >
                 <ShoppingCart className="w-4 h-4 mr-2" />
