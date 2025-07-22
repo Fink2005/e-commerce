@@ -32,7 +32,7 @@ export default function MobileFooterNav() {
   ];
 
   return (
-    <footer className="fixed bottom-0 z-50 bg-background w-[450px] border-t shadow">
+    <footer className="sticky bottom-0 z-10 bg-background w-full border-t shadow">
       <nav className="flex justify-around items-center h-16 px-4">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -46,7 +46,7 @@ export default function MobileFooterNav() {
               )}
               aria-label={item.name}
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="size-5" />
               <span>{item.name}</span>
             </Link>
           );
