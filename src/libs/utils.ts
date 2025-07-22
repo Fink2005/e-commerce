@@ -76,27 +76,3 @@ export const createUrlWithParams = (
 };
 
 export const isClient = () => typeof window !== 'undefined';
-
-export function parseSlug(slug: string) {
-  // Decode from URL format (e.g., %20 to space)
-  const decodedSlug = decodeURIComponent(slug); // "Galaxy fold 3-phone-4"
-
-  // Split by "-" and get the last part as ID
-  const parts = decodedSlug.split('-');
-  const id = Number.parseInt(parts.pop() || '', 10); // 4
-
-  // The type is the last remaining part after ID
-  const type = parts.pop(); // "phone"
-
-  // The name is everything before that
-  const name = parts.join(' '); // "Galaxy fold 3"
-
-  return {
-    name,
-    type,
-    id,
-  };
-}
-
-// Example usage:
-// { name: 'Galaxy fold 3', type: 'phone', id: 4 }
