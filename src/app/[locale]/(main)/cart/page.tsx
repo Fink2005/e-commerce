@@ -67,7 +67,7 @@ const ShoppingCartPage = () => {
                           className="size-8 p-0"
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         >
-                          <Minus className="w-4 h-4" />
+                          <Minus className="size-4" />
                         </Button>
                         <span className="px-3 py-1 text-sm font-medium">
                           {item.quantity}
@@ -78,7 +78,7 @@ const ShoppingCartPage = () => {
                           className="size-8 p-0"
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="size-4" />
                         </Button>
                       </div>
                     </div>
