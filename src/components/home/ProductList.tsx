@@ -35,7 +35,7 @@ const ProductList = ({ products }: ProductListProps) => {
       <h2 className="text-lg font-bold text-gray-900 mt-1 mb-3">Explore Our Products</h2>
 
       {/* Product Grid */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {products.map(product => (
           <Card
             key={product.id}
@@ -43,9 +43,9 @@ const ProductList = ({ products }: ProductListProps) => {
             onClick={() => router.push(`/product-details/${product.id}`)}
           >
             {/* Product Image Placeholder */}
-            <div className="relative bg-gray-200 h-48 flex items-center justify-center">
+            <div className="relative bg-gray-200 h-56 flex items-center justify-center">
               {/* Placeholder for image */}
-              <img className="w-3/4 h-3/4 bg-gray-300 rounded-md"></img>
+              <img className="w-full h-full rounded-md"></img>
             </div>
 
             {/* Product Info Section */}
