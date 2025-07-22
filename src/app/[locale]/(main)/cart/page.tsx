@@ -23,7 +23,6 @@ const ShoppingCartPage = () => {
 
   const applyCoupon = () => {
     // Add coupon logic here
-    console.log('Applying coupon:', couponCode);
   };
 
   return (
