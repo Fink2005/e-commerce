@@ -49,6 +49,7 @@ export interface Product {
   reviews: number;
   image: string;
   category: string;
+  description?: string; // Added description property
   deviceType: string;
   inStock: boolean;
   colors?: Color[];
@@ -61,4 +62,44 @@ export interface Product {
   customizable?: CustomizableOptions;
   usageRecommendation?: UsageRecommendation;
   availableCombinations?: CombinationDeal[];
+}
+
+// new
+
+export type ProductType = 'phone' | 'package' | 'bundle';
+
+export interface BaseProduct {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  rating: number | null;
+  isActive: boolean;
+  createdAt: string;
+  colors?: string[];
+  imageUrl?: string; // Add image property
+  reviewCount?: number;
+  updatedAt: string;
+  type: ProductType;
+}
+
+// Extend with specific fields if needed
+export interface Phone extends BaseProduct {
+  brand: string;
+  imgUrl: string;
+  stock: number;
+}
+
+export type Package = BaseProduct;
+export type Bundle = BaseProduct;
+
+export type UnifiedProduct = Phone | Package | Bundle;
+export interface ProductResponse {
+  phones: Phone[];
+  packages: Package[];
+  bundles: Bundle[];
+}
+
+export interface ProductDetailResponse {
+  data: BaseProduct;
 }
