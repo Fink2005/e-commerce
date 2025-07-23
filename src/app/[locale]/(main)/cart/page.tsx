@@ -63,7 +63,7 @@ const ShoppingCartPage = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="size-8 p-0"
+                          className="cursor-pointer size-8 p-0"
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         >
                           <Minus className="size-4" />
@@ -74,7 +74,7 @@ const ShoppingCartPage = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="size-8 p-0"
+                          className="cursor-pointer size-8 p-0"
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         >
                           <Plus className="size-4" />
@@ -87,7 +87,7 @@ const ShoppingCartPage = () => {
               <Button
                 variant="secondary"
                 size="icon"
-                className="size-5 rounded-full text-white bg-red-500 absolute -top-1 -right-1"
+                className="cursor-pointer size-5 rounded-full text-white bg-red-500 absolute -top-1 -right-1"
                 onClick={() => removeItem(item.id)}
               >
                 <X className="size-4" strokeWidth={4} />
@@ -106,7 +106,7 @@ const ShoppingCartPage = () => {
             />
             <Button
               onClick={applyCoupon}
-              className="bg-red-500 hover:bg-red-600 text-white px-6"
+              className="cursor-pointer bg-red-500 hover:bg-red-600 text-white px-6"
             >
               Apply Coupon
             </Button>
@@ -146,7 +146,7 @@ const ShoppingCartPage = () => {
           </CardContent>
         </Card>
 
-        <Button className="w-full mt-6 bg-red-500 hover:bg-red-600 text-white py-3 text-base font-medium">
+        <Button className="cursor-pointerw-full mt-6 bg-red-500 hover:bg-red-600 text-white py-3 text-base font-medium">
           Proceed to checkout
         </Button>
       </div>

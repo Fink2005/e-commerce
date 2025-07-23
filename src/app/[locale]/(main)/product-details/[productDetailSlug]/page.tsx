@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import type { Product } from '@/lib/products';
 import { parseSlug } from '@/libs/utils';
 import type { ProductResponse } from '@/types/product';
+import { ProductType } from '@/types/product';
 import { Heart, Minus, Plus, Star } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -19,21 +20,15 @@ export default function GamepadProductPage() {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedColor, setSelectedColor] = useState('black');
-  const [selectedSize, setSelectedSize] = useState('M');
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [products, setProducts] = useState<ProductResponse>({
-    bundles: [],
-    phones: [],
-    packages: [],
-  });
+  const [products, setProducts] = useState<ProductResponse[]>();
 
   const colors = [
     { name: 'black', color: 'bg-slate-900', border: 'border-slate-900' },
     { name: 'red', color: 'bg-red-500', border: 'border-red-500' },
   ];
-  const sizes = ['XS', 'S', 'M', 'L', 'XL'];
 
   useEffect(() => {
     if (!id || !type) {
@@ -46,7 +41,7 @@ export default function GamepadProductPage() {
         if (res) {
           setProduct({
             ...res,
-            image: res.imageUrl || '/placeholder.svg', // Provide a default value if missing
+            image: res.imgUrl || '/placeholder.svg', // Provide a default value if missing
             reviewCount: res.reviewCount || 0, // Provide a default value if missing
             rating: res.rating ?? 0, // Provide a default value if null
           });
@@ -66,7 +61,7 @@ export default function GamepadProductPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await productRequests.getProducts();
+        const res = await productRequests.getProductsByType(ProductType.ALL);
         if (res) {
           setProducts(res);
         }
@@ -98,7 +93,7 @@ export default function GamepadProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 mt-10">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="grid grid-cols-1 gap-6">
           {/* Product Images */}
@@ -177,23 +172,6 @@ export default function GamepadProductPage() {
               </div>
             )}
 
-            {/* Size Selection */}
-            <div>
-              <h3 className="text-base font-semibold mb-3">Size:</h3>
-              <div className="flex flex-wrap gap-2">
-                {sizes.map(size => (
-                  <Button
-                    key={size}
-                    variant={selectedSize === size ? 'default' : 'outline'}
-                    onClick={() => setSelectedSize(size)}
-                    className={`w-10 h-10 text-sm ${selectedSize === size ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                  >
-                    {size}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
             {/* Quantity and Actions */}
             <div className="flex flex-row gap-3 items-center">
               <div className="flex items-center border border-gray-300 rounded-lg w-full">
@@ -232,7 +210,7 @@ export default function GamepadProductPage() {
           </div>
 
           {/* Related Products */}
-          {products.bundles.length !== 0 && <ProductList products={products} />}
+          {products?.length !== 0 && <ProductList products={products} />}
         </div>
       </div>
     </div>
