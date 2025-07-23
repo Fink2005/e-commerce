@@ -81,9 +81,7 @@ export const useCartStore = create<CartStore>()(
       },
     }),
     {
-      name: 'cart-storage', // localStorage key
-      // Optional: Add items you don't want to persist
-      // partialize: (state) => ({ items: state.items }),
+      name: 'cart-storage',
     }
   )
 );
