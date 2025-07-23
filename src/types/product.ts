@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 export interface Device {
   type: 'mobile' | 'tablet' | 'router';
   name: string;
@@ -66,9 +67,14 @@ export interface Product {
 
 // new
 
-export type ProductType = 'phone' | 'package' | 'bundle';
+export enum ProductType {
+  PHONE = 'PHONE',
+  PACKAGE = 'PACKAGE',
+  BUNDLE = 'BUNDLE',
+  ALL = 'ALL',
+}
 
-export interface BaseProduct {
+export interface ProductResponse {
   id: number;
   name: string;
   description: string;
@@ -77,29 +83,15 @@ export interface BaseProduct {
   isActive: boolean;
   createdAt: string;
   colors?: string[];
-  imageUrl?: string; // Add image property
+  imgUrl?: string; // Add image property
   reviewCount?: number;
   updatedAt: string;
   type: ProductType;
 }
 
-// Extend with specific fields if needed
-export interface Phone extends BaseProduct {
-  brand: string;
-  imgUrl: string;
-  stock: number;
-}
-
-export type Package = BaseProduct;
-export type Bundle = BaseProduct;
-
-export type UnifiedProduct = Phone | Package | Bundle;
-export interface ProductResponse {
-  phones: Phone[];
-  packages: Package[];
-  bundles: Bundle[];
-}
-
-export interface ProductDetailResponse {
-  data: BaseProduct;
+export interface AnimatingItem {
+  id: string;
+  x: number;
+  y: number;
+  product: ProductResponse;
 }

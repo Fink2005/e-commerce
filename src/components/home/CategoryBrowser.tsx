@@ -1,49 +1,45 @@
 'use client';
-import { Headphones, Monitor, Smartphone, SquareStack, Tablet } from 'lucide-react';
-import { useState } from 'react';
+import { Combine, Package, Smartphone, SquareStack, Tablet } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '../ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
 import SectionBadge from './SectionBadge';
 
 const CategoryBrowser = () => {
-  const [categories, setCategories] = useState([
+  const categories = [
     {
       id: 'all',
       name: 'All Products',
       icon: SquareStack,
-      isActive: true
     },
     {
       id: 'phone',
       name: 'Phone',
       icon: Smartphone,
-      isActive: false
     },
     {
-      id: 'computers',
-      name: 'Computers',
-      icon: Monitor,
-      isActive: false
-    },
-    {
-      id: 'tablets',
-      name: 'Tablets',
+      id: 'tablet',
+      name: 'Tablet',
       icon: Tablet,
-      isActive: false
     },
     {
-      id: 'audio',
-      name: 'Audio',
-      icon: Headphones,
-      isActive: false
+      id: 'package',
+      name: 'Package',
+      icon: Package,
+    },
+    {
+      id: 'bundle',
+      name: 'Bundle',
+      icon: Combine,
     }
-  ]);
+  ];
+
+  const router = useRouter();
+  const params = useSearchParams();
+  const activeCategory = params.get('productType') || 'all';
 
   const handleCardClick = (id: string) => {
-    setCategories(categories.map(category => ({
-      ...category,
-      isActive: category.id === id
-    })));
+    router.push(`?productType=${id}`);
   };
 
   return (
@@ -72,7 +68,7 @@ const CategoryBrowser = () => {
                 <Card
                   className={`
                     cursor-pointer transition-all duration-200 border-1 shadow-none
-                    ${category.isActive
+                    ${activeCategory === category.id
                 ? 'bg-red-500 border-red-600 text-white'
                 : 'bg-white border-gray-400'
               }
@@ -81,8 +77,8 @@ const CategoryBrowser = () => {
                 >
                   <CardContent className="p-5">
                     <div className="flex flex-col items-center gap-4">
-                      <div className={`p-3 rounded-lg ${category.isActive ? 'bg-red-600' : 'bg-gray-100'}`}>
-                        <IconComponent className={`size-8 ${category.isActive ? 'text-white' : 'text-gray-700'}`} />
+                      <div className={`p-3 rounded-lg ${activeCategory === category.id ? 'bg-red-600' : 'bg-gray-100'}`}>
+                        <IconComponent className={`size-8 ${activeCategory === category.id ? 'text-white' : 'text-gray-700'}`} />
                       </div>
                       <span className="font-medium text-sm">{category.name}</span>
                     </div>
