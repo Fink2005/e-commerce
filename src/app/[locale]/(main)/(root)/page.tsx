@@ -4,10 +4,14 @@ import FeatureBrowser from '@/components/home/FeatureBrowser';
 import ProductList from '@/components/home/ProductList';
 import VoucherCarousel from '@/components/home/VoucherCarousel';
 import type { ProductType } from '@/types/product';
-// Import products from the shared file
 
-const Page = async ({ searchParams }: { searchParams: { productType?: string } }) => {
-  const query = (await searchParams).productType?.toUpperCase() as ProductType;
+interface PageProps {
+  searchParams: Promise<{ productType?: string }>;
+}
+
+const Page = async ({ searchParams }: PageProps) => {
+  const resolvedSearchParams = await searchParams;
+  const query = resolvedSearchParams.productType?.toUpperCase() as ProductType;
   const products = await productRequests.getProductsByType(query);
 
   return (
