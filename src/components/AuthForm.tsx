@@ -105,7 +105,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
           password: loginData.password,
         });
 
-        if (response && response.role) {
+        if (response) {
           toast.success('Welcome back!');
 
           router.push('/');

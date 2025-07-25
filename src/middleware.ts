@@ -1,6 +1,8 @@
 import arcjet, { detectBot } from '@arcjet/next';
+import { jwtDecode } from 'jwt-decode';
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
+import authRequests from './app/apis/requests/auth';
 import { routing } from './libs/i18nRouting';
 
 const handleI18nRouting = createMiddleware(routing);
@@ -10,7 +12,8 @@ const isProtectedRoute = (pathname: string): boolean => {
     || pathname.startsWith('/account')
     || pathname.startsWith('/orders')
     || pathname.startsWith('/wishlist')
-    || pathname.startsWith('/dashboard');
+    || pathname.startsWith('/dashboard')
+    || pathname.startsWith('/customize-package');
 };
 
 const isAdminRoute = (pathname: string): boolean => {
@@ -33,187 +36,218 @@ const isWelcomePage = (pathname: string): boolean => {
 const isPublicRoute = (pathname: string): boolean => {
   return pathname === '/'
     || pathname.startsWith('/products')
-    || pathname.startsWith('/product/'); // Individual product pages
+    || pathname.startsWith('/product/');
 };
 
-// Routes that require authentication before proceeding (like checkout)
 const isCheckoutRoute = (pathname: string): boolean => {
   return pathname.startsWith('/checkout')
     || pathname.startsWith('/payment')
     || pathname.startsWith('/cart/checkout');
 };
 
+// Check if token is expired (server-side)
+const isTokenExpired = (token: string): boolean => {
+  try {
+    const decoded = jwtDecode<{ exp: number }>(token);
+    const currentTime = Math.floor(Date.now() / 1000);
+    const bufferTime = 30; // 30 seconds buffer to account for network delays
+
+    return decoded.exp <= (currentTime + bufferTime);
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return true;
+  }
+};
+
 // Improve security with Arcjet
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!, // Use environment variable directly
+  key: process.env.ARCJET_KEY!,
   rules: [
     detectBot({
       mode: 'LIVE',
-      // Block all bots except the following
       allow: [
-        // See https://docs.arcjet.com/bot-protection/identifying-bots
-        'CATEGORY:SEARCH_ENGINE', // Allow search engines
-        'CATEGORY:PREVIEW', // Allow preview links to show OG images
-        'CATEGORY:MONITOR', // Allow uptime monitoring services
+        'CATEGORY:SEARCH_ENGINE',
+        'CATEGORY:PREVIEW',
+        'CATEGORY:MONITOR',
       ],
     }),
   ],
 });
 
-export default async function middleware(
-  request: NextRequest,
-) {
+export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
   // Skip middleware for specific paths
-  if (pathname.startsWith('/request')) {
+  if (pathname.startsWith('/request') || pathname.startsWith('/_next') || pathname.startsWith('/api')) {
     return NextResponse.next();
   }
+
   // Add pathname to headers for recognition
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
 
-  // Get user info from cookie (for middleware decisions)
-  const userInfoCookie = request.cookies.get('userInfo');
+  interface AccessTokenPayload {
+    role?: string;
+    isVerified?: boolean;
+    exp?: number;
+    [key: string]: any;
+  }
+
+  // Get tokens from cookies
   const accessTokenCookie = request.cookies.get('access_token');
+  const refreshTokenCookie = request.cookies.get('refresh_token');
 
-  // Get authentication data from cookies (set by backend)
-  const isAuthenticated = !!accessTokenCookie;
-  let userRole = null;
-  let isEmailConfirmed = false;
-  // const userEmail = '';
+  let decodedToken: AccessTokenPayload | null = null;
+  let isAccessTokenValid = false;
 
-  if (userInfoCookie) {
+  // Check access token validity
+  if (accessTokenCookie) {
     try {
-      const userInfo = JSON.parse(userInfoCookie.value);
-      userRole = userInfo.role;
-      isEmailConfirmed = userInfo.isEmailConfirmed;
-      // userEmail = userInfo.email;
+      decodedToken = jwtDecode<AccessTokenPayload>(accessTokenCookie.value);
+      isAccessTokenValid = !isTokenExpired(accessTokenCookie.value);
     } catch (error) {
-      console.error('Error parsing userInfo cookie:', error);
+      console.error('Error decoding access token:', error);
+      isAccessTokenValid = false;
     }
   }
 
-  // Create a new request with custom headers
+  // Check refresh token validity
+  let isRefreshTokenValid = false;
+  if (refreshTokenCookie) {
+    try {
+      isRefreshTokenValid = !isTokenExpired(refreshTokenCookie.value);
+    } catch (error) {
+      console.error('Error decoding refresh token:', error);
+      isRefreshTokenValid = false;
+    }
+  }
+
+  const isAuthenticated = decodedToken && isAccessTokenValid;
+  const userRole = decodedToken?.role;
+  const isEmailConfirmed = decodedToken?.isVerified;
+
+  // Create request with custom headers
   const requestWithHeaders = new NextRequest(request.url, {
     ...request,
     headers: requestHeaders,
   });
 
-  // Verify the request with Arcjet (for all routes)
+  // Verify with Arcjet (for all routes)
   if (process.env.ARCJET_KEY) {
     const decision = await aj.protect(request);
-
     if (decision.isDenied()) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
   }
 
-  // if (pathname.startsWith('/')) {
-  //   if (!isAuthenticated) {
-  //     // No valid session, redirect to login
-  //     const loginUrl = new URL('/login', request.url);
-  //     return NextResponse.redirect(loginUrl);
-  //   }
-
-  //   // Redirect based on role and email confirmation (your original logic)
-  //   if (userRole === 'ADMIN') {
-  //     const adminUrl = new URL('/admin', request.url);
-  //     return NextResponse.redirect(adminUrl);
-  //   } else if (!isEmailConfirmed) {
-  //     const verifyUrl = new URL(`/verify-email?email=${encodeURIComponent(userEmail)}`, request.url);
-  //     return NextResponse.redirect(verifyUrl);
-  //   } else {
-  //     const homeUrl = new URL('/', request.url);
-  //     return NextResponse.redirect(homeUrl);
-  //   }
-  // }
-
-  // Allow all public routes without authentication (like Amazon/Shopee)
+  // Allow all public routes without authentication
   if (isPublicRoute(pathname)) {
     return handleI18nRouting(requestWithHeaders);
+  }
+
+  // 🔑 KEY LOGIC: Handle token refresh for protected routes
+  const requiresAuth = isProtectedRoute(pathname) || isAdminRoute(pathname) || isCheckoutRoute(pathname);
+
+  if (requiresAuth && !isAuthenticated) {
+    // Handle token refresh if we have a valid refresh token
+    if ((!accessTokenCookie || !isAccessTokenValid) && refreshTokenCookie && isRefreshTokenValid) {
+      try {
+        const response = await authRequests.refreshToken(refreshTokenCookie.value);
+
+        if (response?.accessToken && response?.refreshToken) {
+          // Create response to continue to the original request
+          const res = NextResponse.redirect(request.url);
+
+          // Set the new tokens as cookies
+          res.cookies.set('access_token', response.accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/',
+          });
+
+          res.cookies.set('refresh_token', response.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/',
+          });
+
+          return res;
+        }
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+      }
+    }
+
+    // If refresh failed or no valid refresh token, redirect to login
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    loginUrl.searchParams.set('error', 'session_expired');
+    return NextResponse.redirect(loginUrl);
   }
 
   // Handle admin route protection
   if (isAdminRoute(pathname)) {
     if (!isAuthenticated || userRole !== 'ADMIN') {
-      const loginUrl = new URL(`/login?redirect=${encodeURIComponent(pathname)}`, request.url);
-      return NextResponse.redirect(loginUrl);
+      return NextResponse.redirect(new URL(`/login?redirect=${encodeURIComponent(pathname)}`, request.url));
     }
   }
 
-  // Handle checkout routes - require authentication but show login prompt
+  // Handle checkout routes
   if (isCheckoutRoute(pathname)) {
     if (!isAuthenticated) {
-      // Redirect to login with return URL for checkout
-      const loginUrl = new URL(`/login?redirect=${encodeURIComponent(pathname)}&action=checkout`, request.url);
-      return NextResponse.redirect(loginUrl);
+      return NextResponse.redirect(new URL(`/login?redirect=${encodeURIComponent(pathname)}&action=checkout`, request.url));
     }
 
-    // Check email confirmation for checkout
     if (!isEmailConfirmed) {
-      const verifyUrl = new URL(`/verify-email?redirect=${encodeURIComponent(pathname)}`, request.url);
-      return NextResponse.redirect(verifyUrl);
+      return NextResponse.redirect(new URL(`/verify-email?redirect=${encodeURIComponent(pathname)}`, request.url));
     }
   }
 
-  // Handle protected routes (user account features)
+  // Handle protected routes
   if (isProtectedRoute(pathname)) {
     if (!isAuthenticated) {
-      // Redirect to login with return URL
-      const loginUrl = new URL(`/login?redirect=${encodeURIComponent(pathname)}`, request.url);
-      return NextResponse.redirect(loginUrl);
+      return NextResponse.redirect(new URL(`/login?redirect=${encodeURIComponent(pathname)}`, request.url));
     }
 
-    // Check if email is confirmed for account features
     if (!isEmailConfirmed) {
-      const verifyUrl = new URL(`/verify-email?redirect=${encodeURIComponent(pathname)}`, request.url);
-      return NextResponse.redirect(verifyUrl);
+      return NextResponse.redirect(new URL(`/verify-email?redirect=${encodeURIComponent(pathname)}`, request.url));
     }
   }
 
   // Redirect authenticated users away from auth pages
   if (isAuthPage(pathname) && isAuthenticated) {
-    // Check for redirect parameter first
     const redirectParam = request.nextUrl.searchParams.get('redirect');
 
     if (redirectParam) {
-      // If email confirmed, go to original destination
       if (isEmailConfirmed) {
-        const redirectUrl = new URL(redirectParam, request.url);
-        return NextResponse.redirect(redirectUrl);
+        return NextResponse.redirect(new URL(redirectParam, request.url));
       }
-      // If email not confirmed and trying to access verify-email, allow it
       if (!isEmailConfirmed && pathname.startsWith('/verify-email')) {
         return handleI18nRouting(requestWithHeaders);
       }
     }
 
-    // Default redirects for authenticated users on auth pages
     if (userRole === 'ADMIN') {
-      const adminUrl = new URL('/admin', request.url);
-      return NextResponse.redirect(adminUrl);
+      return NextResponse.redirect(new URL('/admin', request.url));
     }
 
-    // If email not confirmed, allow access to verify-email page
     if (!isEmailConfirmed && pathname.startsWith('/verify-email')) {
       return handleI18nRouting(requestWithHeaders);
     }
 
-    // If email is confirmed, redirect to home
     if (isEmailConfirmed) {
-      const homeUrl = new URL('/', request.url);
-      return NextResponse.redirect(homeUrl);
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
   // Redirect authenticated users away from welcome pages
   if (isWelcomePage(pathname) && isAuthenticated) {
     if (userRole === 'ADMIN') {
-      const adminUrl = new URL('/admin', request.url);
-      return NextResponse.redirect(adminUrl);
+      return NextResponse.redirect(new URL('/admin', request.url));
     } else {
-      const homeUrl = new URL('/', request.url);
-      return NextResponse.redirect(homeUrl);
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
@@ -222,8 +256,5 @@ export default async function middleware(
 }
 
 export const config = {
-  // Match all pathnames except for
-  // - … if they start with `/api`, `/trpc`, `/_next` or `/_vercel`
-  // - … the ones containing a dot (e.g. `favicon.ico`)
   matcher: '/((?!_next|_vercel|monitoring|.*\\..*).*)',
 };
