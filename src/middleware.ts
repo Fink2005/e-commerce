@@ -78,7 +78,7 @@ export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Skip middleware for specific paths
-  if (pathname.startsWith('/request') || pathname.startsWith('/_next') || pathname.startsWith('/api')) {
+  if (pathname.startsWith('/request')) {
     return NextResponse.next();
   }
 
