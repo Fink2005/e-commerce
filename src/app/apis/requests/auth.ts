@@ -20,14 +20,20 @@ const authRequests = {
     }
   },
 
-  async refreshToken(refreshToken: string): Promise<any> {
+  async refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string } | null> {
     try {
-      return await apiRequest('auth/refresh-token', 'POST', {
+      const response = await apiRequest<{ accessToken: string; refreshToken: string }>('auth/refresh-token', 'POST', {
         refreshToken,
       });
+
+      if (!response?.accessToken || !response?.refreshToken) {
+        throw new Error('Invalid token response');
+      }
+
+      return response;
     } catch (error) {
       console.error('Refresh token request failed:', error);
-      return null;
+      throw error;
     }
   },
 
