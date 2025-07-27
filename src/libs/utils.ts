@@ -85,7 +85,7 @@ export const checkAndRefreshToken = async (param?: {
   const now = Math.round(new Date().getTime() / 1000);
   // trường hợp refresh token hết hạn thì cho logout
   if (decodedRefreshToken.exp <= now) {
-    deleteCookie('refreshToken');
+    deleteCookie('refresh_token');
     return param?.onError && param.onError();
   }
   // Ví dụ access token của chúng ta có thời gian hết hạn là 10s

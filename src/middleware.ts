@@ -95,14 +95,6 @@ export default async function middleware(request: NextRequest) {
 
   const isAuthenticated = !!userRole;
 
-  // Handle token refresh for protected routes
-  if (isTokenExpired && refreshToken && isProtectedRoute(pathname)) {
-    const refreshUrl = new URL('/refresh-token', request.url);
-    refreshUrl.searchParams.set('refreshToken', refreshToken);
-    refreshUrl.searchParams.set('redirect', pathnameAndSearchParams);
-    return NextResponse.redirect(refreshUrl);
-  }
-
   // Route protection logic
   if (isProtectedRoute(pathname)) {
     // Redirect unauthenticated users to login
@@ -110,6 +102,14 @@ export default async function middleware(request: NextRequest) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathnameAndSearchParams);
       return NextResponse.redirect(loginUrl);
+    }
+
+    // Handle token refresh for protected routes
+    if (isTokenExpired && refreshToken) {
+      const refreshUrl = new URL('/refresh-token', request.url);
+      refreshUrl.searchParams.set('refreshToken', refreshToken);
+      refreshUrl.searchParams.set('redirect', pathnameAndSearchParams);
+      return NextResponse.redirect(refreshUrl);
     }
   }
 
@@ -131,15 +131,6 @@ export default async function middleware(request: NextRequest) {
   if ((isAuthPage(pathname) && isAuthenticated)) {
     const homeUrl = new URL('/', request.url);
     return NextResponse.redirect(homeUrl);
-  }
-
-  if (
-    pathname !== '/refresh-token' && (isTokenExpired && refreshToken) && isProtectedRoute(pathname)
-  ) {
-    const url = new URL(`/refresh-token`, request.url);
-    url.searchParams.set('refresh_token', refreshToken);
-    url.searchParams.set('redirect', pathnameAndSearchParams);
-    return NextResponse.redirect(url);
   }
 
   // Apply i18n routing
