@@ -1,19 +1,15 @@
+import { decodeToken } from '@/libs/utils';
 import arcjet, { detectBot } from '@arcjet/next';
-import { jwtDecode } from 'jwt-decode';
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
-import authRequests from './app/apis/requests/auth';
 import { routing } from './libs/i18nRouting';
 
 const handleI18nRouting = createMiddleware(routing);
 
 const isProtectedRoute = (pathname: string): boolean => {
-  return pathname.startsWith('/profile')
-    || pathname.startsWith('/account')
-    || pathname.startsWith('/orders')
-    || pathname.startsWith('/wishlist')
-    || pathname.startsWith('/dashboard')
-    || pathname.startsWith('/customize-package');
+  return pathname.startsWith('/checkout')
+    || pathname === '/customize-package'
+    || pathname.startsWith('/profile');
 };
 
 const isAdminRoute = (pathname: string): boolean => {
@@ -22,46 +18,15 @@ const isAdminRoute = (pathname: string): boolean => {
 
 const isAuthPage = (pathname: string): boolean => {
   return pathname.startsWith('/login')
-    || pathname.startsWith('/register')
     || pathname.startsWith('/verify-email')
-    || pathname.startsWith('/forgot-password');
+    || pathname.startsWith('/forgot-password')
+    || pathname.startsWith('/register')
+    || pathname.startsWith('/reset-password');
 };
 
-const isWelcomePage = (pathname: string): boolean => {
-  return pathname.startsWith('/welcome')
-    || pathname.startsWith('/introduction')
-    || pathname.startsWith('/policy-terms');
-};
-
-const isPublicRoute = (pathname: string): boolean => {
-  return pathname === '/'
-    || pathname.startsWith('/products')
-    || pathname.startsWith('/product/');
-};
-
-const isCheckoutRoute = (pathname: string): boolean => {
-  return pathname.startsWith('/checkout')
-    || pathname.startsWith('/payment')
-    || pathname.startsWith('/cart/checkout');
-};
-
-// Check if token is expired (server-side)
-const isTokenExpired = (token: string): boolean => {
-  try {
-    const decoded = jwtDecode<{ exp: number }>(token);
-    const currentTime = Math.floor(Date.now() / 1000);
-    const bufferTime = 30; // 30 seconds buffer to account for network delays
-
-    return decoded.exp <= (currentTime + bufferTime);
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    return true;
-  }
-};
-
-// Improve security with Arcjet
+// Arcjet security setup
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!,
+  key: process.env.NEXT_PUBLIC_ARCJET_KEY!,
   rules: [
     detectBot({
       mode: 'LIVE',
@@ -76,185 +41,112 @@ const aj = arcjet({
 
 export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const pathnameAndSearchParams = pathname + request.nextUrl.search;
 
-  // Skip middleware for specific paths
-  if (pathname.startsWith('/request')) {
+  // Skip middleware for request routes
+  if (pathname.startsWith('/request') || pathname === '/refresh-token') {
     return NextResponse.next();
   }
 
-  // Add pathname to headers for recognition
+  // Set custom header with pathname
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
 
-  interface AccessTokenPayload {
-    role?: string;
-    isVerified?: boolean;
-    exp?: number;
-    [key: string]: any;
-  }
-
-  // Get tokens from cookies
-  const accessTokenCookie = request.cookies.get('access_token');
-  const refreshTokenCookie = request.cookies.get('refresh_token');
-
-  let decodedToken: AccessTokenPayload | null = null;
-  let isAccessTokenValid = false;
-
-  // Check access token validity
-  if (accessTokenCookie) {
-    try {
-      decodedToken = jwtDecode<AccessTokenPayload>(accessTokenCookie.value);
-      isAccessTokenValid = !isTokenExpired(accessTokenCookie.value);
-    } catch (error) {
-      console.error('Error decoding access token:', error);
-      isAccessTokenValid = false;
-    }
-  }
-
-  // Check refresh token validity
-  let isRefreshTokenValid = false;
-  if (refreshTokenCookie) {
-    try {
-      isRefreshTokenValid = !isTokenExpired(refreshTokenCookie.value);
-    } catch (error) {
-      console.error('Error decoding refresh token:', error);
-      isRefreshTokenValid = false;
-    }
-  }
-
-  const isAuthenticated = decodedToken && isAccessTokenValid;
-  const userRole = decodedToken?.role;
-  const isEmailConfirmed = decodedToken?.isVerified;
-
-  // Create request with custom headers
   const requestWithHeaders = new NextRequest(request.url, {
     ...request,
     headers: requestHeaders,
   });
 
-  // Verify with Arcjet (for all routes)
-  if (process.env.ARCJET_KEY) {
-    const decision = await aj.protect(request);
-    if (decision.isDenied()) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-  }
-
-  // Allow all public routes without authentication
-  if (isPublicRoute(pathname)) {
-    return handleI18nRouting(requestWithHeaders);
-  }
-
-  // 🔑 KEY LOGIC: Handle token refresh for protected routes
-  const requiresAuth = isProtectedRoute(pathname) || isAdminRoute(pathname) || isCheckoutRoute(pathname);
-
-  if (requiresAuth && !isAuthenticated) {
-    // Handle token refresh if we have a valid refresh token
-    if ((!accessTokenCookie || !isAccessTokenValid) && refreshTokenCookie && isRefreshTokenValid) {
-      try {
-        const response = await authRequests.refreshToken(refreshTokenCookie.value);
-
-        if (response?.accessToken && response?.refreshToken) {
-          // Create response to continue to the original request
-          const res = NextResponse.redirect(request.url);
-
-          // Set the new tokens as cookies
-          res.cookies.set('access_token', response.accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            path: '/',
-          });
-
-          res.cookies.set('refresh_token', response.refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            path: '/',
-          });
-
-          return res;
-        }
-      } catch (error) {
-        console.error('Token refresh failed:', error);
+  // Arcjet protection
+  if (process.env.NEXT_PUBLIC_ARCJET_KEY) {
+    try {
+      const decision = await aj.protect(request);
+      if (decision.isDenied()) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
-    }
-
-    // If refresh failed or no valid refresh token, redirect to login
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    loginUrl.searchParams.set('error', 'session_expired');
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // Handle admin route protection
-  if (isAdminRoute(pathname)) {
-    if (!isAuthenticated || userRole !== 'ADMIN') {
-      return NextResponse.redirect(new URL(`/login?redirect=${encodeURIComponent(pathname)}`, request.url));
+    } catch (error) {
+      console.error('❌ Arcjet error:', error);
+      return NextResponse.json({ error: 'Internal Error (Arcjet)' }, { status: 500 });
     }
   }
 
-  // Handle checkout routes
-  if (isCheckoutRoute(pathname)) {
-    if (!isAuthenticated) {
-      return NextResponse.redirect(new URL(`/login?redirect=${encodeURIComponent(pathname)}&action=checkout`, request.url));
-    }
+  // Get tokens
+  const accessToken = request.cookies.get('access_token')?.value;
+  const refreshToken = request.cookies.get('refresh_token')?.value;
 
-    if (!isEmailConfirmed) {
-      return NextResponse.redirect(new URL(`/verify-email?redirect=${encodeURIComponent(pathname)}`, request.url));
+  // Determine authentication status
+  let userRole: string | null = null;
+  let isTokenExpired = false;
+  const now = Math.round(new Date().getTime() / 1000);
+
+  if (accessToken) {
+    try {
+      const decoded = decodeToken(accessToken);
+      isTokenExpired = decoded.exp < now;
+
+      if (!isTokenExpired) {
+        userRole = decoded?.role || null;
+      }
+    } catch (error) {
+      console.error('❌ Failed to decode access token:', error);
+      isTokenExpired = true;
     }
   }
 
-  // Handle protected routes
+  const isAuthenticated = !!userRole;
+
+  // Handle token refresh for protected routes
+  if (isTokenExpired && refreshToken && isProtectedRoute(pathname)) {
+    const refreshUrl = new URL('/refresh-token', request.url);
+    refreshUrl.searchParams.set('refreshToken', refreshToken);
+    refreshUrl.searchParams.set('redirect', pathnameAndSearchParams);
+    return NextResponse.redirect(refreshUrl);
+  }
+
+  // Route protection logic
   if (isProtectedRoute(pathname)) {
+    // Redirect unauthenticated users to login
     if (!isAuthenticated) {
-      return NextResponse.redirect(new URL(`/login?redirect=${encodeURIComponent(pathname)}`, request.url));
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathnameAndSearchParams);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  if (isAdminRoute(pathname)) {
+    // Admin routes require authentication and admin role
+    if (!isAuthenticated) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathnameAndSearchParams);
+      return NextResponse.redirect(loginUrl);
     }
 
-    if (!isEmailConfirmed) {
-      return NextResponse.redirect(new URL(`/verify-email?redirect=${encodeURIComponent(pathname)}`, request.url));
+    if (userRole !== 'ADMIN') {
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
     }
   }
 
   // Redirect authenticated users away from auth pages
-  if (isAuthPage(pathname) && isAuthenticated) {
-    const redirectParam = request.nextUrl.searchParams.get('redirect');
-
-    if (redirectParam) {
-      if (isEmailConfirmed) {
-        return NextResponse.redirect(new URL(redirectParam, request.url));
-      }
-      if (!isEmailConfirmed && pathname.startsWith('/verify-email')) {
-        return handleI18nRouting(requestWithHeaders);
-      }
-    }
-
-    if (userRole === 'ADMIN') {
-      return NextResponse.redirect(new URL('/admin', request.url));
-    }
-
-    if (!isEmailConfirmed && pathname.startsWith('/verify-email')) {
-      return handleI18nRouting(requestWithHeaders);
-    }
-
-    if (isEmailConfirmed) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
+  if ((isAuthPage(pathname) && isAuthenticated)) {
+    const homeUrl = new URL('/', request.url);
+    return NextResponse.redirect(homeUrl);
   }
 
-  // Redirect authenticated users away from welcome pages
-  if (isWelcomePage(pathname) && isAuthenticated) {
-    if (userRole === 'ADMIN') {
-      return NextResponse.redirect(new URL('/admin', request.url));
-    } else {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
+  if (
+    pathname !== '/refresh-token' && (isTokenExpired && refreshToken) && isProtectedRoute(pathname)
+  ) {
+    const url = new URL(`/refresh-token`, request.url);
+    url.searchParams.set('refresh_token', refreshToken);
+    url.searchParams.set('redirect', pathnameAndSearchParams);
+    return NextResponse.redirect(url);
   }
 
   // Apply i18n routing
   return handleI18nRouting(requestWithHeaders);
 }
 
+// Middleware matcher
 export const config = {
   matcher: '/((?!_next|_vercel|monitoring|.*\\..*).*)',
 };

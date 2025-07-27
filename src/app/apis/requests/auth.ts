@@ -1,3 +1,4 @@
+import { getCookie } from '@/app/actions/cookie';
 import apiRequest from '@/app/apis/apiRequest';
 import type { LoginPayload, LoginResponse, RegisterPayload, RegisterResponse } from '@/types/auth';
 
@@ -85,6 +86,14 @@ const authRequests = {
       console.error('Set new password failed:', error);
       throw error;
     }
+  },
+
+  async serverRefreshToken(): Promise<{ accessToken: string; refreshToken: string } | null> {
+    const refreshToken = await getCookie('refreshToken');
+    if (!refreshToken) {
+      return null;
+    }
+    return this.refreshToken(refreshToken);
   },
 
 };
