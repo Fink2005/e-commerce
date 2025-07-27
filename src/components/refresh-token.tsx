@@ -3,7 +3,7 @@ import { checkAndRefreshToken } from '@/libs/utils';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-const UNAUTHENTICATED_PATH = ['/login', '/refresh-token', '/welcome', '/introduction', '/policy-terms', '/verify-email', '/verified', '/kyc'];
+const UNAUTHENTICATED_PATH = ['/login', '/refresh-token', '/', '/cart', '/product-details', '/products', '/forgot-password', '/register', '/reset-password', '/verify-email'];
 
 const RefreshToken = () => {
   const pathname = usePathname();
