@@ -21,16 +21,24 @@ const authRequests = {
     }
   },
 
+  async logout(): Promise<boolean> {
+    try {
+      await apiRequest('auth/logout', 'POST');
+      return true;
+    } catch (error) {
+      console.error('Logout request failed:', error);
+      throw error;
+    }
+  },
+
   async refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string } | null> {
     try {
       const response = await apiRequest<{ accessToken: string; refreshToken: string }>('auth/refresh-token', 'POST', {
         refreshToken,
       });
-
       if (!response?.accessToken || !response?.refreshToken) {
         throw new Error('Invalid token response');
       }
-
       return response;
     } catch (error) {
       console.error('Refresh token request failed:', error);
@@ -95,7 +103,6 @@ const authRequests = {
     }
     return this.refreshToken(refreshToken);
   },
-
 };
 
 export default authRequests;
