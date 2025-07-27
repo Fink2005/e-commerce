@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RefreshTokenPage() {
-  const refreshToken = await getCookie('refreshToken');
+  const refreshToken = await getCookie('refresh_token');
 
   return (
     <Suspense fallback={<Loading />}>
