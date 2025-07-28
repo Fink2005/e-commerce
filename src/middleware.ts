@@ -127,10 +127,19 @@ export default async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect authenticated users away from auth pages
-  if ((isAuthPage(pathname) && isAuthenticated)) {
-    const homeUrl = new URL('/', request.url);
-    return NextResponse.redirect(homeUrl);
+  // Redirect authenticated users away from auth pages (but respect redirect parameter)
+  if (isAuthPage(pathname) && isAuthenticated) {
+    const redirectParam = request.nextUrl.searchParams.get('redirect');
+
+    if (redirectParam) {
+      // If there's a redirect parameter, redirect to that destination
+      const redirectUrl = new URL(redirectParam, request.url);
+      return NextResponse.redirect(redirectUrl);
+    } else {
+      // If no redirect parameter, go to home page
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
+    }
   }
 
   // Apply i18n routing

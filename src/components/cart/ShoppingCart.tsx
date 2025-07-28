@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useCartStore } from '@/lib/store/cartStore';
 import { Minus, Plus, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const ShoppingCart = () => {
@@ -15,6 +16,7 @@ const ShoppingCart = () => {
     getTotalPrice
   } = useCartStore();
 
+  const router = useRouter();
   const [couponCode, setCouponCode] = useState('');
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -173,7 +175,7 @@ const ShoppingCart = () => {
           </CardContent>
         </Card>
 
-        <Button className="cursor-pointer w-full mt-6 bg-red-500 hover:bg-red-600 text-white py-3 text-base font-medium">
+        <Button onClick={() => router.push('/checkout')} className="cursor-pointer w-full mt-6 bg-red-500 hover:bg-red-600 text-white py-3 text-base font-medium">
           Proceed to checkout
         </Button>
       </div>
