@@ -24,6 +24,7 @@ export default function GamepadProductPage() {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [products, setProducts] = useState<ProductResponse[]>();
+  const [loading, setLoading] = useState(false);
 
   const colors = [
     { name: 'black', color: 'bg-slate-900', border: 'border-slate-900' },
@@ -37,6 +38,7 @@ export default function GamepadProductPage() {
 
     const fetchProduct = async () => {
       try {
+        setLoading(true);
         const res = await productRequests.getProductById(type.toUpperCase(), id);
         if (res) {
           setProduct({
@@ -52,6 +54,9 @@ export default function GamepadProductPage() {
       } catch (err) {
         console.error('❌ Failed to fetch product:', err);
         setProduct(null);
+        setLoading(false);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -87,7 +92,7 @@ export default function GamepadProductPage() {
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center text-xl text-gray-600">
-        Product not found.
+        {loading ? 'Loading...' : 'Product not found.'}
       </div>
     );
   }

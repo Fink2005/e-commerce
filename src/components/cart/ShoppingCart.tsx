@@ -175,7 +175,11 @@ const ShoppingCart = () => {
           </CardContent>
         </Card>
 
-        <Button onClick={() => router.push('/checkout')} className="cursor-pointer w-full mt-6 bg-red-500 hover:bg-red-600 text-white py-3 text-base font-medium">
+        <Button
+          disabled={cartItems.length === 0}
+          onClick={() => router.push('/checkout')}
+          className="cursor-pointer w-full mt-6 bg-red-500 hover:bg-red-600 text-white py-3 text-base font-medium"
+        >
           Proceed to checkout
         </Button>
       </div>

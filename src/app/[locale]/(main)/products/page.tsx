@@ -1,31 +1,49 @@
+/* eslint-disable react/no-array-index-key */
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Filter, Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { Filters } from '@/components/products/filters';
-import { PackageModal } from '@/components/products/package-modal';
+import { productRequests } from '@/app/apis/requests/product';
 import { ProductCard } from '@/components/products/product-card';
-import { ProductModal } from '@/components/products/product-modal';
-import { deviceTypes, products } from '@/data/products';
-import type { Product } from '@/types/product';
+import type { ProductResponse } from '@/types/product';
+import { ProductType } from '@/types/product';
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDeviceTypes, setSelectedDeviceTypes] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 2500]);
+  const [selectedType, setSelectedType] = useState<ProductType>(ProductType.ALL);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState('featured');
   const [showFilters, setShowFilters] = useState(false);
 
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [showProductModal, setShowProductModal] = useState(false);
-  const [showPackageModal, setShowPackageModal] = useState(false);
+  const [products, setProducts] = useState<ProductResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch products on component mount and when type changes
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const result = await productRequests.getProductsByType(selectedType);
+        setProducts(result);
+      } catch (err) {
+        setError('Failed to load products. Please try again.');
+        console.error('Error fetching products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [selectedType]);
 
   const filteredProducts = useMemo(() => {
     return products
@@ -33,13 +51,13 @@ export default function ProductsPage() {
         if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
           return false;
         }
-        if (selectedDeviceTypes.length > 0 && !selectedDeviceTypes.includes(product.deviceType)) {
+        if (product.price < priceRange[0] || product.price > priceRange[1]) {
           return false;
         }
-        if (priceRange && (product.price < priceRange[0] || product.price > priceRange[1])) {
+        if (product.rating && product.rating < minRating) {
           return false;
         }
-        if (product.rating < minRating) {
+        if (!product.isActive) {
           return false;
         }
         return true;
@@ -51,37 +69,20 @@ export default function ProductsPage() {
           case 'price-high':
             return b.price - a.price;
           case 'rating':
-            return b.rating - a.rating;
+            return (b.rating || 0) - (a.rating || 0);
           case 'name':
             return a.name.localeCompare(b.name);
           default:
             return 0;
         }
       });
-  }, [searchQuery, selectedDeviceTypes, priceRange, minRating, sortBy]);
+  }, [products, searchQuery, priceRange, minRating, sortBy]);
 
-  const handleDeviceTypeChange = (deviceType: string, checked: boolean) => {
-    if (checked) {
-      setSelectedDeviceTypes([...selectedDeviceTypes, deviceType]);
-    } else {
-      setSelectedDeviceTypes(selectedDeviceTypes.filter(type => type !== deviceType));
-    }
-  };
-
-  // Updated function name to match ProductCard prop
-  const handleAddToCartAction = (product: Product) => {
-    setSelectedProduct(product);
-    if (product.type === 'package') {
-      setShowPackageModal(true);
-    } else {
-      setShowProductModal(true);
-    }
-  };
-
-  const handleCloseModals = () => {
-    setShowProductModal(false);
-    setShowPackageModal(false);
-    setSelectedProduct(null);
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedType(ProductType.ALL);
+    setPriceRange([0, 1000]);
+    setMinRating(0);
   };
 
   return (
@@ -94,7 +95,7 @@ export default function ProductsPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  placeholder="Search products and packages..."
+                  placeholder="Search products..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -103,8 +104,20 @@ export default function ProductsPage() {
             </div>
 
             <div className="flex items-center space-x-4">
+              <Select value={selectedType} onValueChange={value => setSelectedType(value as ProductType)}>
+                <SelectTrigger className="w-auto">
+                  <SelectValue placeholder="Product Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ProductType.ALL}>All Products</SelectItem>
+                  <SelectItem value={ProductType.PHONE}>Phones</SelectItem>
+                  <SelectItem value={ProductType.PACKAGE}>Packages</SelectItem>
+                  <SelectItem value={ProductType.BUNDLE}>Bundles</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-auto">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -119,7 +132,7 @@ export default function ProductsPage() {
               <Sheet open={showFilters} onOpenChange={setShowFilters}>
                 <SheetTrigger asChild>
                   <Button variant="outline" className="bg-transparent">
-                    <Filter className="w-4 h-4 mr-2" />
+                    <Filter className="w-4 h-4" />
                     Filters
                   </Button>
                 </SheetTrigger>
@@ -128,16 +141,56 @@ export default function ProductsPage() {
                     <SheetTitle>Filters</SheetTitle>
                     <SheetDescription>Refine your search results</SheetDescription>
                   </SheetHeader>
-                  <div className="mt-6">
-                    <Filters
-                      deviceTypes={deviceTypes}
-                      selectedDeviceTypes={selectedDeviceTypes}
-                      onDeviceTypeChangeAction={handleDeviceTypeChange}
-                      priceRange={priceRange}
-                      onPriceRangeChangeAction={setPriceRange}
-                      minRating={minRating}
-                      onMinRatingChangeAction={setMinRating}
-                    />
+                  <div className="px-4 space-y-6">
+                    {/* Price Range Filter */}
+                    <div>
+                      <label className="text-sm font-medium" htmlFor="price-range">Price Range</label>
+                      <div className="mt-2 space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            type="number"
+                            placeholder="Min"
+                            value={priceRange[0]}
+                            onChange={e => setPriceRange([Number(e.target.value), priceRange[1]])}
+                            className="w-full"
+                          />
+                          <span>-</span>
+                          <Input
+                            type="number"
+                            placeholder="Max"
+                            value={priceRange[1]}
+                            onChange={e => setPriceRange([priceRange[0], Number(e.target.value)])}
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Minimum Rating Filter */}
+                    <div>
+                      <label className="text-sm font-medium" htmlFor="minimum-rating">Minimum Rating</label>
+                      <Select value={minRating.toString()} onValueChange={value => setMinRating(Number(value))}>
+                        <SelectTrigger className="mt-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">All Ratings</SelectItem>
+                          <SelectItem value="1">1+ Stars</SelectItem>
+                          <SelectItem value="2">2+ Stars</SelectItem>
+                          <SelectItem value="3">3+ Stars</SelectItem>
+                          <SelectItem value="4">4+ Stars</SelectItem>
+                          <SelectItem value="5">5 Stars</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      onClick={clearFilters}
+                      className="w-full bg-transparent"
+                    >
+                      Clear All Filters
+                    </Button>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -147,29 +200,14 @@ export default function ProductsPage() {
       </div>
 
       <div className="container mx-auto px-4 py-6">
-        <div className="flex gap-6">
-          {/* Desktop Filters Sidebar */}
-          <div className="hidden w-64 flex-shrink-0">
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="font-semibold text-lg mb-4">Filters</h2>
-                <Filters
-                  deviceTypes={deviceTypes}
-                  selectedDeviceTypes={selectedDeviceTypes}
-                  onDeviceTypeChangeAction={handleDeviceTypeChange}
-                  priceRange={priceRange}
-                  onPriceRangeChangeAction={setPriceRange}
-                  minRating={minRating}
-                  onMinRatingChangeAction={setMinRating}
-                />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Products Grid */}
-          <div className="flex-1">
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold mb-2">Products & Packages</h1>
+        <div className="flex-1">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold mb-2">Products</h1>
+            {loading ? (
+              <p className="text-gray-600">Loading products...</p>
+            ) : error ? (
+              <p></p>
+            ) : (
               <p className="text-gray-600">
                 Showing
                 {' '}
@@ -181,54 +219,59 @@ export default function ProductsPage() {
                 {' '}
                 items
               </p>
-            </div>
+            )}
+          </div>
 
+          {loading ? (
             <div className="grid grid-cols-1 gap-6">
-              {filteredProducts.map(product => (
+              {[...Array.from({ length: 6 })].map((_, i) => (
+                <Card key={i} className="p-6">
+                  <div className="animate-pulse space-y-4">
+                    <div className="bg-gray-200 h-48 rounded"></div>
+                    <div className="space-y-2">
+                      <div className="bg-gray-200 h-4 rounded w-3/4"></div>
+                      <div className="bg-gray-200 h-4 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-500 text-lg mb-4">{error}</p>
+              <Button
+                variant="outline"
+                onClick={() => window.location.reload()}
+                className="bg-transparent"
+              >
+                Retry
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6">
+              {filteredProducts.map((product, index) => (
                 <ProductCard
-                  key={product.id}
+                  key={index}
                   product={product}
-                  onAddToCartAction={handleAddToCartAction}
                 />
               ))}
             </div>
+          )}
 
-            {filteredProducts.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">No items found matching your criteria.</p>
-                <Button
-                  variant="outline"
-                  className="mt-4 bg-transparent"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSelectedDeviceTypes([]);
-                    setPriceRange([0, 2500]);
-                    setMinRating(0);
-                  }}
-                >
-                  Clear Filters
-                </Button>
-              </div>
-            )}
-          </div>
+          {!loading && !error && filteredProducts.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
+              <Button
+                variant="outline"
+                className="mt-4 bg-transparent"
+                onClick={clearFilters}
+              >
+                Clear Filters
+              </Button>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Modals */}
-      {selectedProduct && (
-        <>
-          <ProductModal
-            product={selectedProduct}
-            isOpen={showProductModal}
-            onCloseAction={handleCloseModals}
-          />
-          <PackageModal
-            product={selectedProduct}
-            isOpen={showPackageModal}
-            onCloseAction={handleCloseModals}
-          />
-        </>
-      )}
     </div>
   );
 }
