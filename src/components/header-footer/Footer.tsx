@@ -5,31 +5,30 @@ import { Compass, Home, Package, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+const navItems = [
+  {
+    name: 'Home',
+    href: '/',
+    icon: Home,
+  },
+  {
+    name: 'Explore',
+    href: '/products',
+    icon: Compass,
+  },
+  {
+    name: 'Package',
+    href: '/customize-package',
+    icon: Package,
+  },
+  {
+    name: 'Profile',
+    href: '/profile',
+    icon: User,
+  },
+];
 export default function MobileFooterNav() {
   const pathname = usePathname();
-
-  const navItems = [
-    {
-      name: 'Home',
-      href: '/',
-      icon: Home,
-    },
-    {
-      name: 'Explore',
-      href: '/products',
-      icon: Compass,
-    },
-    {
-      name: 'Package',
-      href: '/customize-package',
-      icon: Package,
-    },
-    {
-      name: 'Profile',
-      href: '/profile',
-      icon: User,
-    },
-  ];
 
   return (
     <footer className="sticky bottom-0 z-10 bg-background w-full border-t shadow">
@@ -44,6 +43,7 @@ export default function MobileFooterNav() {
                 'flex flex-col items-center gap-1 text-xs font-medium transition-colors',
                 isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
               )}
+              prefetch
               aria-label={item.name}
             >
               <item.icon className="size-5" />

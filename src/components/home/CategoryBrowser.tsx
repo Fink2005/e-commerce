@@ -1,5 +1,5 @@
 'use client';
-import { Combine, Package, Smartphone, SquareStack, Tablet } from 'lucide-react';
+import { Combine, Package, Smartphone, SquareStack } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '../ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
@@ -18,11 +18,6 @@ const CategoryBrowser = () => {
       icon: Smartphone,
     },
     {
-      id: 'tablet',
-      name: 'Tablet',
-      icon: Tablet,
-    },
-    {
       id: 'package',
       name: 'Package',
       icon: Package,
@@ -36,10 +31,12 @@ const CategoryBrowser = () => {
 
   const router = useRouter();
   const params = useSearchParams();
-  const activeCategory = params.get('productType') || 'all';
+  const activeCategory = params.get('productType') || params.get('deviceType') || 'all';
 
   const handleCardClick = (id: string) => {
-    router.push(`?productType=${id}`);
+    const productQueries = new URLSearchParams();
+    productQueries.set(id === 'tablet' ? 'deviceType' : 'productType', id);
+    router.push(`?${productQueries.toString()}`);
   };
 
   return (

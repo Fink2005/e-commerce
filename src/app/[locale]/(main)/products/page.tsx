@@ -33,7 +33,7 @@ export default function ProductsPage() {
         setLoading(true);
         setError(null);
         const result = await productRequests.getProductsByType(selectedType);
-        setProducts(result);
+        setProducts(result || []);
       } catch (err) {
         setError('Failed to load products. Please try again.');
         console.error('Error fetching products:', err);

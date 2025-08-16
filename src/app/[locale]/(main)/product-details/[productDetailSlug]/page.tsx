@@ -39,7 +39,7 @@ export default function GamepadProductPage() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const res = await productRequests.getProductById(type.toUpperCase(), id);
+        const res = await productRequests.getProductById(id);
         if (res) {
           setProduct({
             ...res,

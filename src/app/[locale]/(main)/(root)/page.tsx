@@ -9,7 +9,7 @@ interface PageProps {
   searchParams: Promise<{ productType?: string }>;
 }
 
-const Page = async ({ searchParams }: PageProps) => {
+const page = async ({ searchParams }: PageProps) => {
   const resolvedSearchParams = await searchParams;
   const query = resolvedSearchParams.productType?.toUpperCase() as ProductType;
   const products = await productRequests.getProductsByType(query);
@@ -19,9 +19,9 @@ const Page = async ({ searchParams }: PageProps) => {
       <VoucherCarousel />
       <CategoryBrowser />
       <FeatureBrowser />
-      <ProductList products={products} />
+      <ProductList products={products || []} />
     </div>
   );
 };
 
-export default Page;
+export default page;
