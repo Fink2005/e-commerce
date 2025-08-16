@@ -1,5 +1,4 @@
 'use client';
-
 import authRequests from '@/app/apis/requests/auth';
 import { Button } from '@/components/ui/button';
 import { Heart, LogOut, ShoppingCart } from 'lucide-react';
@@ -12,7 +11,6 @@ const Header = () => {
   const handleLogout = async () => {
     try {
       await authRequests.logout();
-
       // Redirect to login page or home page
       router.push('/login');
     } catch (error) {
@@ -24,7 +22,10 @@ const Header = () => {
     <header
       className="w-full bg-white border-b border-gray-300 px-3 py-1 flex items-center justify-end gap-3 sticky top-0 z-10"
     >
-      <Link href="/wishlist">
+      <Link
+        href="/wishlist"
+        prefetch={true}
+      >
         <Button
           variant="ghost"
           size="icon"
@@ -35,7 +36,10 @@ const Header = () => {
         </Button>
       </Link>
 
-      <Link href="/cart">
+      <Link
+        href="/cart"
+        prefetch={true}
+      >
         <Button
           variant="ghost"
           size="icon"
