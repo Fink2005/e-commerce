@@ -36,9 +36,11 @@ export function EnquiriesTable() {
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
   const [respondOpen, setRespondOpen] = useState(false);
   const [responseText, setResponseText] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchEnquiries() {
+      setLoading(true);
       const data = await userRequests.getAllEnquiries();
       if (Array.isArray(data)) {
         const mapped = data.map((item: any) => ({
@@ -52,6 +54,7 @@ export function EnquiriesTable() {
         }));
         setEnquiries(mapped);
       }
+      setLoading(false);
     }
     fetchEnquiries();
   }, []);
@@ -111,58 +114,72 @@ export function EnquiriesTable() {
         <CardTitle>Customer Enquiries</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Subject</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Priority</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {enquiries.map(enquiry => (
-              <TableRow key={enquiry.id}>
-                <TableCell className="font-medium">{enquiry.id}</TableCell>
-                <TableCell>{enquiry.customer}</TableCell>
-                <TableCell>{enquiry.subject}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={getStatusColor(enquiry.status)}>
-                    {enquiry.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={getPriorityColor(enquiry.priority)}>
-                    {enquiry.priority}
-                  </Badge>
-                </TableCell>
-                <TableCell>{enquiry.date}</TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleViewEnquiry(enquiry)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleRespondEnquiry(enquiry)}>
-                        <Mail className="mr-2 h-4 w-4" />
-                        Respond
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+        {loading ? (
+          <div className="flex justify-center items-center h-32">
+            <p>Loading...</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Subject</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {enquiries.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center">
+                    No enquiries found.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                enquiries.map(enquiry => (
+                  <TableRow key={enquiry.id}>
+                    <TableCell className="font-medium">{enquiry.id}</TableCell>
+                    <TableCell>{enquiry.customer}</TableCell>
+                    <TableCell>{enquiry.subject}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={getStatusColor(enquiry.status)}>
+                        {enquiry.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={getPriorityColor(enquiry.priority)}>
+                        {enquiry.priority}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{enquiry.date}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleViewEnquiry(enquiry)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleRespondEnquiry(enquiry)}>
+                            <Mail className="mr-2 h-4 w-4" />
+                            Respond
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
 
       {/* View Details Dialog */}
