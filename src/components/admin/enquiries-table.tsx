@@ -27,7 +27,6 @@ interface Enquiry {
   subject: string;
   status: 'pending' | 'responded' | 'closed';
   date: string;
-  priority: 'low' | 'medium' | 'high';
   description: string;
 }
 
@@ -47,9 +46,8 @@ export function EnquiriesTable() {
           id: item.id.toString(),
           customer: item.users?.name || 'Unknown',
           subject: item.issues?.replace(/_/g, ' ') || 'No Subject',
-          status: 'pending' as const, // Hardcoded, as no status in API data
-          date: '', // No date in API data; leave blank or implement if added later
-          priority: 'medium' as const, // Hardcoded, as no priority in API data
+          status: item.status || 'pending',
+          date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A',
           description: item.description || 'No description provided',
         }));
         setEnquiries(mapped);
@@ -67,19 +65,6 @@ export function EnquiriesTable() {
         return 'bg-green-100 text-green-800 border-green-200';
       case 'closed':
         return 'bg-gray-100 text-gray-800 border-gray-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'low':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -126,7 +111,6 @@ export function EnquiriesTable() {
                 <TableHead>Customer</TableHead>
                 <TableHead>Subject</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Priority</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -147,11 +131,6 @@ export function EnquiriesTable() {
                     <TableCell>
                       <Badge variant="outline" className={getStatusColor(enquiry.status)}>
                         {enquiry.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={getPriorityColor(enquiry.priority)}>
-                        {enquiry.priority}
                       </Badge>
                     </TableCell>
                     <TableCell>{enquiry.date}</TableCell>
@@ -217,11 +196,6 @@ export function EnquiriesTable() {
                 <strong>Status:</strong>
                 {' '}
                 {selectedEnquiry.status}
-              </p>
-              <p>
-                <strong>Priority:</strong>
-                {' '}
-                {selectedEnquiry.priority}
               </p>
               <p>
                 <strong>Date:</strong>
