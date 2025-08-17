@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { format } from 'date-fns';
 import { Edit, Eye, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { OrderProcessingDialog } from './order-processing-dialog';
@@ -12,9 +13,9 @@ interface Order {
   id: string;
   customer: string;
   package: string;
-  amount: number;
+  totalAmount: number;
   status: string;
-  date: string;
+  createdAt: string;
 }
 
 interface Customer {
@@ -52,7 +53,6 @@ export function OrdersTable({ orders, customers, packages }: OrdersTableProps) {
             <TableRow>
               <TableHead>Order ID</TableHead>
               <TableHead>Customer</TableHead>
-              <TableHead>Package</TableHead>
               <TableHead>Amount</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Date</TableHead>
@@ -63,11 +63,10 @@ export function OrdersTable({ orders, customers, packages }: OrdersTableProps) {
             {orders.map(order => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell>{order.customer}</TableCell>
-                <TableCell>{order.package}</TableCell>
+                <TableCell>{order.users.name}</TableCell>
                 <TableCell>
                   $
-                  {order.amount.toFixed(2)}
+                  {order.totalAmount}
                 </TableCell>
                 <TableCell>
                   <Badge
@@ -80,10 +79,10 @@ export function OrdersTable({ orders, customers, packages }: OrdersTableProps) {
                           : 'bg-red-100 text-red-700'
                     }
                   >
-                    {order.status}
+                    {order.status.toLowerCase()}
                   </Badge>
                 </TableCell>
-                <TableCell>{order.date}</TableCell>
+                <TableCell>{format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm:ss')}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     <Button size="sm" variant="outline">

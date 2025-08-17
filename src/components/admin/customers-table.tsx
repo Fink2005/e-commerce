@@ -12,7 +12,8 @@ interface Customer {
   email: string;
   phone: string;
   orders: number;
-  status: string;
+  isEmailConfirmed: boolean;
+	totalOrders: number;
 }
 
 interface CustomersTableProps {
@@ -59,15 +60,15 @@ export function CustomersTable({ customers, onVerifyCustomerAction }: CustomersT
                     <div className="text-gray-500">{customer.phone}</div>
                   </div>
                 </TableCell>
-                <TableCell>{customer.orders}</TableCell>
+                <TableCell>{customer.totalOrders}</TableCell>
                 <TableCell>
                   <Badge
-                    variant={customer.status === 'verified' ? 'secondary' : 'destructive'}
+                    variant={customer.isEmailConfirmed ? 'secondary' : 'destructive'}
                     className={
-                      customer.status === 'verified' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      customer.isEmailConfirmed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                     }
                   >
-                    {customer.status}
+                    {customer.isEmailConfirmed ? 'verified' : 'pending'}
                   </Badge>
                 </TableCell>
                 <TableCell>
