@@ -1,8 +1,15 @@
 'use client';
 
+import userRequests from '@/app/apis/requests/user'; // Adjust the import path as needed based on your project structure
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +17,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import { Eye, Mail, MoreHorizontal } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface Enquiry {
   id: string;
@@ -19,13 +28,34 @@ interface Enquiry {
   status: 'pending' | 'responded' | 'closed';
   date: string;
   priority: 'low' | 'medium' | 'high';
+  description: string;
 }
 
-interface EnquiriesTableProps {
-  enquiries: Enquiry[];
-}
+export function EnquiriesTable() {
+  const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
+  const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
+  const [respondOpen, setRespondOpen] = useState(false);
+  const [responseText, setResponseText] = useState('');
 
-export function EnquiriesTable({ enquiries }: EnquiriesTableProps) {
+  useEffect(() => {
+    async function fetchEnquiries() {
+      const data = await userRequests.getAllEnquiries();
+      if (Array.isArray(data)) {
+        const mapped = data.map((item: any) => ({
+          id: item.id.toString(),
+          customer: item.users?.name || 'Unknown',
+          subject: item.issues?.replace(/_/g, ' ') || 'No Subject',
+          status: 'pending' as const, // Hardcoded, as no status in API data
+          date: '', // No date in API data; leave blank or implement if added later
+          priority: 'medium' as const, // Hardcoded, as no priority in API data
+          description: item.description || 'No description provided',
+        }));
+        setEnquiries(mapped);
+      }
+    }
+    fetchEnquiries();
+  }, []);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
@@ -53,13 +83,26 @@ export function EnquiriesTable({ enquiries }: EnquiriesTableProps) {
   };
 
   const handleViewEnquiry = (enquiry: Enquiry) => {
-    // Add view logic here
-    console.warn('Viewing enquiry:', enquiry);
+    setSelectedEnquiry(enquiry);
   };
 
   const handleRespondEnquiry = (enquiry: Enquiry) => {
-    // Add respond logic here
-    console.warn('Responding to enquiry:', enquiry);
+    setSelectedEnquiry(enquiry);
+    setRespondOpen(true);
+  };
+
+  const handleSendResponse = () => {
+    if (selectedEnquiry) {
+      // Update local status (no backend update assumed)
+      setEnquiries(prev =>
+        prev.map(e =>
+          e.id === selectedEnquiry.id ? { ...e, status: 'responded' } : e
+        )
+      );
+    }
+    setRespondOpen(false);
+    setResponseText('');
+    setSelectedEnquiry(null);
   };
 
   return (
@@ -121,6 +164,73 @@ export function EnquiriesTable({ enquiries }: EnquiriesTableProps) {
           </TableBody>
         </Table>
       </CardContent>
+
+      {/* View Details Dialog */}
+      <Dialog
+        open={!!selectedEnquiry && !respondOpen}
+        onOpenChange={open => !open && setSelectedEnquiry(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enquiry Details</DialogTitle>
+          </DialogHeader>
+          {selectedEnquiry && (
+            <div className="space-y-2">
+              <p>
+                <strong>ID:</strong>
+                {' '}
+                {selectedEnquiry.id}
+              </p>
+              <p>
+                <strong>Customer:</strong>
+                {' '}
+                {selectedEnquiry.customer}
+              </p>
+              <p>
+                <strong>Subject:</strong>
+                {' '}
+                {selectedEnquiry.subject}
+              </p>
+              <p>
+                <strong>Description:</strong>
+                {' '}
+                {selectedEnquiry.description}
+              </p>
+              <p>
+                <strong>Status:</strong>
+                {' '}
+                {selectedEnquiry.status}
+              </p>
+              <p>
+                <strong>Priority:</strong>
+                {' '}
+                {selectedEnquiry.priority}
+              </p>
+              <p>
+                <strong>Date:</strong>
+                {' '}
+                {selectedEnquiry.date || 'N/A'}
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Respond Dialog */}
+      <Dialog open={respondOpen} onOpenChange={setRespondOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Respond to Enquiry</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            className="w-full h-32"
+            value={responseText}
+            onChange={e => setResponseText(e.target.value)}
+            placeholder="Type your response here..."
+          />
+          <Button onClick={handleSendResponse}>Send Response</Button>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
