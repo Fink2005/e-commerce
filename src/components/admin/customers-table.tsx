@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Download, Edit, Eye, Phone } from 'lucide-react';
+import { Download, Phone } from 'lucide-react';
 
 interface Customer {
   id: string;
@@ -46,7 +46,6 @@ export function CustomersTable({ customers, onVerifyCustomerAction }: CustomersT
               <TableHead>Contact</TableHead>
               <TableHead>Orders</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -70,16 +69,6 @@ export function CustomersTable({ customers, onVerifyCustomerAction }: CustomersT
                   >
                     {customer.isEmailConfirmed ? 'verified' : 'pending'}
                   </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </TableCell>
               </TableRow>
             ))}

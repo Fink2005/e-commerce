@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
-import { Edit, Eye, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { OrderProcessingDialog } from './order-processing-dialog';
 
@@ -56,7 +56,6 @@ export function OrdersTable({ orders, customers, packages }: OrdersTableProps) {
               <TableHead>Amount</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -83,16 +82,6 @@ export function OrdersTable({ orders, customers, packages }: OrdersTableProps) {
                   </Badge>
                 </TableCell>
                 <TableCell>{format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm:ss')}</TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
