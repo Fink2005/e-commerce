@@ -52,6 +52,40 @@ const userRequests = {
   },
   async getUsers(): Promise<User[] | null> {
     return await apiRequest<User[] | null>('/user', 'GET');
+  },
+  async getMe(): Promise<{
+    totalOrders: number;
+    email: string;
+    name: string;
+    role: string;
+    createdAt: string;
+    updatedAt: string;
+    product: {
+      broadBandData: number;
+      mobileData: number;
+      packageType: string;
+    };
+  } | null> {
+    return await apiRequest<{
+      totalOrders: number;
+      email: string;
+      name: string;
+      role: string;
+      createdAt: string;
+      updatedAt: string;
+      product: {
+        broadBandData: number;
+        mobileData: number;
+        packageType: string;
+      };
+    } | null>('/user/me', 'GET');
+  },
+  async updateUser(body: object): Promise<{ success: boolean } | null> {
+    return await apiRequest<{ success: boolean } | null>(
+      '/user/me',
+      'PATCH',
+      body
+    );
   }
 
 };

@@ -2,26 +2,27 @@ import arcjet, { detectBot } from '@arcjet/next';
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 import { routing } from './libs/i18nRouting';
+import { decodeToken } from './libs/utils';
 
 const handleI18nRouting = createMiddleware(routing);
 
-// const isProtectedRoute = (pathname: string): boolean => {
-//   return pathname.startsWith('/checkout')
-//     || pathname === '/customize-package'
-//     || pathname.startsWith('/profile');
-// };
+const isProtectedRoute = (pathname: string): boolean => {
+  return pathname.startsWith('/checkout')
+    || pathname === '/customize-package'
+    || pathname.startsWith('/profile');
+};
 
-// const isAdminRoute = (pathname: string): boolean => {
-//   return pathname.startsWith('/admin');
-// };
+const isAdminRoute = (pathname: string): boolean => {
+  return pathname.startsWith('/admin');
+};
 
-// const isAuthPage = (pathname: string): boolean => {
-//   return pathname.startsWith('/login')
-//     || pathname.startsWith('/verify-email')
-//     || pathname.startsWith('/forgot-password')
-//     || pathname.startsWith('/register')
-//     || pathname.startsWith('/reset-password');
-// };
+const isAuthPage = (pathname: string): boolean => {
+  return pathname.startsWith('/login')
+    || pathname.startsWith('/verify-email')
+    || pathname.startsWith('/forgot-password')
+    || pathname.startsWith('/register')
+    || pathname.startsWith('/reset-password');
+};
 
 // Arcjet security setup
 const aj = arcjet({
@@ -40,7 +41,7 @@ const aj = arcjet({
 
 export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  // const pathnameAndSearchParams = pathname + request.nextUrl.search;
+  const pathnameAndSearchParams = pathname + request.nextUrl.search;
 
   // Skip middleware for request routes
   if (pathname.startsWith('/request') || pathname === '/refresh-token') {
@@ -70,76 +71,76 @@ export default async function middleware(request: NextRequest) {
   }
 
   // Get tokens
-  // const accessToken = request.cookies.get('access_token')?.value;
-  // const refreshToken = request.cookies.get('refresh_token')?.value;
+  const accessToken = request.cookies.get('access_token')?.value;
+  const refreshToken = request.cookies.get('refresh_token')?.value;
 
   // Determine authentication status
-  // const userRole: string | null = null;
-  // const isTokenExpired = false;
-  // const now = Math.round(new Date().getTime() / 1000);
+  let userRole: string | null = null;
+  let isTokenExpired = false;
+  const now = Math.round(new Date().getTime() / 1000);
 
-  // if (accessToken) {
-  //   try {
-  //     const decoded = decodeToken(accessToken);
-  //     isTokenExpired = decoded.exp < now;
+  if (accessToken) {
+    try {
+      const decoded = decodeToken(accessToken);
+      isTokenExpired = decoded.exp < now;
 
-  //     if (!isTokenExpired) {
-  //       userRole = decoded?.role || null;
-  //     }
-  //   } catch (error) {
-  //     console.error('❌ Failed to decode access token:', error);
-  //     isTokenExpired = true;
-  //   }
-  // }
+      if (!isTokenExpired) {
+        userRole = decoded?.role || null;
+      }
+    } catch (error) {
+      console.error('❌ Failed to decode access token:', error);
+      isTokenExpired = true;
+    }
+  }
 
-  // const isAuthenticated = !!userRole;
+  const isAuthenticated = !!userRole;
 
   // Route protection logic
-  // if (isProtectedRoute(pathname)) {
-  //   // Redirect unauthenticated users to login
-  //   if (!isAuthenticated) {
-  //     const loginUrl = new URL('/login', request.url);
-  //     loginUrl.searchParams.set('redirect', pathnameAndSearchParams);
-  //     return NextResponse.redirect(loginUrl);
-  //   }
+  if (isProtectedRoute(pathname)) {
+    // Redirect unauthenticated users to login
+    if (!isAuthenticated) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathnameAndSearchParams);
+      return NextResponse.redirect(loginUrl);
+    }
 
-  //   // Handle token refresh for protected routes
-  //   if (isTokenExpired && refreshToken) {
-  //     const refreshUrl = new URL('/refresh-token', request.url);
-  //     refreshUrl.searchParams.set('refreshToken', refreshToken);
-  //     refreshUrl.searchParams.set('redirect', pathnameAndSearchParams);
-  //     return NextResponse.redirect(refreshUrl);
-  //   }
-  // }
+    // Handle token refresh for protected routes
+    if (isTokenExpired && refreshToken) {
+      const refreshUrl = new URL('/refresh-token', request.url);
+      refreshUrl.searchParams.set('refreshToken', refreshToken);
+      refreshUrl.searchParams.set('redirect', pathnameAndSearchParams);
+      return NextResponse.redirect(refreshUrl);
+    }
+  }
 
-  // if (isAdminRoute(pathname)) {
-  //   // Admin routes require authentication and admin role
-  //   if (!isAuthenticated) {
-  //     const loginUrl = new URL('/login', request.url);
-  //     loginUrl.searchParams.set('redirect', pathnameAndSearchParams);
-  //     return NextResponse.redirect(loginUrl);
-  //   }
+  if (isAdminRoute(pathname)) {
+    // Admin routes require authentication and admin role
+    if (!isAuthenticated) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathnameAndSearchParams);
+      return NextResponse.redirect(loginUrl);
+    }
 
-  //   if (userRole !== 'ADMIN') {
-  //     const homeUrl = new URL('/', request.url);
-  //     return NextResponse.redirect(homeUrl);
-  //   }
-  // }
+    if (userRole !== 'ADMIN') {
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
+    }
+  }
 
-  // // Redirect authenticated users away from auth pages (but respect redirect parameter)
-  // if (isAuthPage(pathname) && isAuthenticated) {
-  //   const redirectParam = request.nextUrl.searchParams.get('redirect');
+  // Redirect authenticated users away from auth pages (but respect redirect parameter)
+  if (isAuthPage(pathname) && isAuthenticated) {
+    const redirectParam = request.nextUrl.searchParams.get('redirect');
 
-  //   if (redirectParam) {
-  //     // If there's a redirect parameter, redirect to that destination
-  //     const redirectUrl = new URL(redirectParam, request.url);
-  //     return NextResponse.redirect(redirectUrl);
-  //   } else {
-  //     // If no redirect parameter, go to home page
-  //     const homeUrl = new URL('/', request.url);
-  //     return NextResponse.redirect(homeUrl);
-  //   }
-  // }
+    if (redirectParam) {
+      // If there's a redirect parameter, redirect to that destination
+      const redirectUrl = new URL(redirectParam, request.url);
+      return NextResponse.redirect(redirectUrl);
+    } else {
+      // If no redirect parameter, go to home page
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
+    }
+  }
 
   // Apply i18n routing
   return handleI18nRouting(requestWithHeaders);

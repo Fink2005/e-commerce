@@ -10,10 +10,47 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { CreditCard, Mail, MapPin, MessageCircle, Phone, Save, User, Wifi } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-export default function MyAccount() {
+interface UserData {
+  totalOrders: number;
+  email: string;
+  name: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+  product: {
+    broadBandData: number;
+    mobileData: number;
+    packageType: string;
+  };
+}
+
+interface MyAccountProps {
+  userData?: UserData | null;
+  onUpdateUser?: (data: Partial<UserData>) => Promise<{ success: boolean; error?: string }>;
+}
+
+export default function MyAccount({ userData: propUserData, onUpdateUser }: MyAccountProps) {
   const router = useRouter();
+
+  // User data state
+  const [userData, setUserData] = useState<UserData | null>(propUserData || null);
+  const [loading, setLoading] = useState(!propUserData);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Form state for personal information
+  const [personalInfo, setPersonalInfo] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    zipCode: ''
+  });
 
   // State for enquiry form
   const [enquiry, setEnquiry] = useState({
@@ -24,26 +61,145 @@ export default function MyAccount() {
   const [enquiryError, setEnquiryError] = useState('');
   const [enquirySuccess, setEnquirySuccess] = useState(false);
 
+  // Fetch user data if not provided as prop
+  useEffect(() => {
+    if (!propUserData) {
+      const fetchUserData = async () => {
+        try {
+          setLoading(true);
+          const data = await userRequests.getMe();
+          if (data) {
+            setUserData(data);
+            // Parse name into first and last name
+            const nameParts = data.name ? data.name.split(' ') : ['', ''];
+            setPersonalInfo(prev => ({
+              ...prev,
+              firstName: nameParts[0] || '',
+              lastName: nameParts.slice(1).join(' ') || '',
+              email: data.email || '',
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchUserData();
+    } else {
+      // If userData is provided as prop, initialize form
+      const initializePersonalInfo = () => {
+        const nameParts = propUserData.name ? propUserData.name.split(' ') : ['', ''];
+        setPersonalInfo(prev => ({
+          ...prev,
+          firstName: nameParts[0] || '',
+          lastName: nameParts.slice(1).join(' ') || '',
+          email: propUserData.email || '',
+        }));
+      };
+      initializePersonalInfo();
+    }
+  }, [propUserData]);
+
+  // Update local state when prop changes
+  useEffect(() => {
+    if (propUserData) {
+      setUserData(propUserData);
+      const initializePersonalInfo = () => {
+        const nameParts = propUserData.name ? propUserData.name.split(' ') : ['', ''];
+        setPersonalInfo(prev => ({
+          ...prev,
+          firstName: nameParts[0] || '',
+          lastName: nameParts.slice(1).join(' ') || '',
+          email: propUserData.email || '',
+        }));
+      };
+      initializePersonalInfo();
+    }
+  }, [propUserData]);
+
+  const handlePersonalInfoChange = (field: string, value: string) => {
+    setPersonalInfo(prev => ({ ...prev, [field]: value }));
+    // Clear messages when user starts typing
+    setSaveError('');
+    setSaveSuccess(false);
+  };
+
+  const handleSavePersonalInfo = async () => {
+    if (!userData) {
+      return;
+    }
+
+    // Validation
+    if (!personalInfo.firstName.trim()) {
+      setSaveError('First name is required');
+      return;
+    }
+    if (!personalInfo.email.trim()) {
+      setSaveError('Email is required');
+      return;
+    }
+
+    setSaveLoading(true);
+    setSaveError('');
+    setSaveSuccess(false);
+
+    try {
+      const fullName = `${personalInfo.firstName.trim()} ${personalInfo.lastName.trim()}`.trim();
+
+      const updatedData = {
+        ...userData,
+        name: fullName,
+        email: personalInfo.email.trim(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      let updateResult;
+      if (onUpdateUser) {
+        // Use provided update function
+        updateResult = await onUpdateUser(updatedData);
+      } else {
+        // Use direct API call
+        const response = await userRequests.updateUser(updatedData);
+        updateResult = { success: response?.success || false };
+      }
+
+      if (updateResult.success) {
+        setUserData(updatedData);
+        setSaveSuccess(true);
+        // Auto-hide success message after 3 seconds
+        setTimeout(() => {
+          setSaveSuccess(false);
+        }, 3000);
+      } else {
+        setSaveError(updateResult.error || 'Failed to save changes. Please try again.');
+      }
+    } catch (error) {
+      setSaveError('An error occurred while saving. Please try again later.');
+      console.error('Save personal info error:', error);
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
   const handleCustomizePackage = () => {
     router.push('/customize-package');
   };
 
   const handleEnquiryTypeChange = (value: string) => {
     setEnquiry(prev => ({ ...prev, issues: value }));
-    // Clear messages when user changes selection
     setEnquiryError('');
     setEnquirySuccess(false);
   };
 
   const handleEnquiryDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setEnquiry(prev => ({ ...prev, description: e.target.value }));
-    // Clear messages when user starts typing
     setEnquiryError('');
     setEnquirySuccess(false);
   };
 
   const handleSubmitEnquiry = async () => {
-    // Validation
     if (!enquiry.issues) {
       setEnquiryError('Please select an enquiry type');
       return;
@@ -69,12 +225,10 @@ export default function MyAccount() {
 
       if (response && response.success) {
         setEnquirySuccess(true);
-        // Reset form
         setEnquiry({
           issues: '',
           description: ''
         });
-        // Auto-hide success message after 5 seconds
         setTimeout(() => {
           setEnquirySuccess(false);
         }, 5000);
@@ -88,6 +242,23 @@ export default function MyAccount() {
       setEnquiryLoading(false);
     }
   };
+
+  // Calculate usage percentages
+  const mobileUsagePercent = userData?.product ? Math.round((userData.product.mobileData / 20) * 100) : 0;
+  const broadbandUsagePercent = userData?.product ? Math.round((userData.product.broadBandData / 500) * 100) : 0;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-md mx-auto bg-white min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto mb-4"></div>
+            <p className="text-gray-500">Loading account information...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -106,27 +277,57 @@ export default function MyAccount() {
                 <Label htmlFor="firstName" className="text-sm font-medium">
                   First Name
                 </Label>
-                <Input id="firstName" placeholder="Enter first name" className="h-12 text-base" />
+                <Input
+                  id="firstName"
+                  value={personalInfo.firstName}
+                  onChange={e => handlePersonalInfoChange('firstName', e.target.value)}
+                  placeholder="Enter first name"
+                  className="h-12 text-base"
+                  disabled={saveLoading}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName" className="text-sm font-medium">
                   Last Name
                 </Label>
-                <Input id="lastName" placeholder="Enter last name" className="h-12 text-base" />
+                <Input
+                  id="lastName"
+                  value={personalInfo.lastName}
+                  onChange={e => handlePersonalInfoChange('lastName', e.target.value)}
+                  placeholder="Enter last name"
+                  className="h-12 text-base"
+                  disabled={saveLoading}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium">
                   <Mail className="h-4 w-4" />
                   Email Address
                 </Label>
-                <Input id="email" type="email" placeholder="Enter email address" className="h-12 text-base" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={personalInfo.email}
+                  onChange={e => handlePersonalInfoChange('email', e.target.value)}
+                  placeholder="Enter email address"
+                  className="h-12 text-base"
+                  disabled={saveLoading}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone" className="flex items-center gap-2 text-sm font-medium">
                   <Phone className="h-4 w-4" />
                   Phone Number
                 </Label>
-                <Input id="phone" type="tel" placeholder="Enter phone number" className="h-12 text-base" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={personalInfo.phone}
+                  onChange={e => handlePersonalInfoChange('phone', e.target.value)}
+                  placeholder="Enter phone number"
+                  className="h-12 text-base"
+                  disabled={saveLoading}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="address" className="flex items-center gap-2 text-sm font-medium">
@@ -135,8 +336,11 @@ export default function MyAccount() {
                 </Label>
                 <Textarea
                   id="address"
+                  value={personalInfo.address}
+                  onChange={e => handlePersonalInfoChange('address', e.target.value)}
                   placeholder="Enter full address"
                   className="min-h-[100px] text-base resize-none"
+                  disabled={saveLoading}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -144,18 +348,62 @@ export default function MyAccount() {
                   <Label htmlFor="city" className="text-sm font-medium">
                     City
                   </Label>
-                  <Input id="city" placeholder="Enter city" className="h-12 text-base" />
+                  <Input
+                    id="city"
+                    value={personalInfo.city}
+                    onChange={e => handlePersonalInfoChange('city', e.target.value)}
+                    placeholder="Enter city"
+                    className="h-12 text-base"
+                    disabled={saveLoading}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="zipCode" className="text-sm font-medium">
                     ZIP Code
                   </Label>
-                  <Input id="zipCode" placeholder="Enter ZIP code" className="h-12 text-base" />
+                  <Input
+                    id="zipCode"
+                    value={personalInfo.zipCode}
+                    onChange={e => handlePersonalInfoChange('zipCode', e.target.value)}
+                    placeholder="Enter ZIP code"
+                    className="h-12 text-base"
+                    disabled={saveLoading}
+                  />
                 </div>
               </div>
-              <Button className="w-full h-12 bg-red-500 hover:bg-red-600 text-base font-medium mt-6">
-                <Save className="h-4 w-4 mr-2" />
-                Save Personal Info
+
+              {/* Save Error Alert */}
+              {saveError && (
+                <Alert variant="destructive">
+                  <AlertDescription>{saveError}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* Save Success Alert */}
+              {saveSuccess && (
+                <Alert className="border-green-200 bg-green-50">
+                  <AlertDescription className="text-green-800">
+                    ✓ Personal information saved successfully!
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <Button
+                className="w-full h-12 bg-red-500 hover:bg-red-600 text-base font-medium mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleSavePersonalInfo}
+                disabled={saveLoading}
+              >
+                {saveLoading ? (
+                  <>
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Personal Info
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>
@@ -251,14 +499,21 @@ export default function MyAccount() {
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">Mobile Data</div>
-                      <div className="text-sm text-gray-600">15.2 GB used of 20GB</div>
+                      <div className="text-sm text-gray-600">
+                        {userData?.product?.mobileData || 0}
+                        {' '}
+                        GB used of 20GB
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-bold text-blue-600">76%</div>
+                    <div className="text-lg font-bold text-blue-600">
+                      {mobileUsagePercent}
+                      %
+                    </div>
                   </div>
                 </div>
-                <Progress value={76} className="h-3 bg-blue-100" />
+                <Progress value={mobileUsagePercent} className="h-3 bg-blue-100" />
               </div>
               <div className="bg-green-50 p-4 rounded-lg border border-green-100">
                 <div className="flex items-center justify-between mb-3">
@@ -268,15 +523,29 @@ export default function MyAccount() {
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">Broadband</div>
-                      <div className="text-sm text-gray-600">245GB used of 500GB</div>
+                      <div className="text-sm text-gray-600">
+                        {userData?.product?.broadBandData || 0}
+                        GB used of 500GB
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-bold text-green-600">49%</div>
+                    <div className="text-lg font-bold text-green-600">
+                      {broadbandUsagePercent}
+                      %
+                    </div>
                   </div>
                 </div>
-                <Progress value={49} className="h-3 bg-green-100" />
+                <Progress value={broadbandUsagePercent} className="h-3 bg-green-100" />
               </div>
+
+              {userData?.product?.packageType && (
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className="text-sm text-gray-600">Current Package</div>
+                  <div className="font-medium text-gray-900">{userData.product.packageType}</div>
+                </div>
+              )}
+
               <Button
                 variant="outline"
                 className="w-full h-12 text-base font-medium border-2 border-red-200 text-red-600 hover:bg-red-50 bg-transparent"
@@ -335,14 +604,14 @@ export default function MyAccount() {
                 </p>
               </div>
 
-              {/* Error Alert */}
+              {/* Enquiry Error Alert */}
               {enquiryError && (
                 <Alert variant="destructive">
                   <AlertDescription>{enquiryError}</AlertDescription>
                 </Alert>
               )}
 
-              {/* Success Alert */}
+              {/* Enquiry Success Alert */}
               {enquirySuccess && (
                 <Alert className="border-green-200 bg-green-50">
                   <AlertDescription className="text-green-800">
@@ -370,6 +639,31 @@ export default function MyAccount() {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Account Stats */}
+          {userData && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Account Statistics</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm text-gray-600">Total Orders</span>
+                  <span className="font-medium">{userData.totalOrders}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm text-gray-600">Member Since</span>
+                  <span className="font-medium">
+                    {new Date(userData.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm text-gray-600">Account Type</span>
+                  <span className="font-medium capitalize">{userData.role}</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
