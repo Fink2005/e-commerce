@@ -1,44 +1,52 @@
 /* eslint-disable react/no-array-index-key */
 'use client';
+import { orderRequest } from '@/app/apis/requests/order';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Order } from '@/types/order';
+import { format } from 'date-fns';
 import { Package } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import OrderDetails from './OrderDetails';
 
 export default function MyOrders() {
-  const [currentView, setCurrentView] = useState('orders'); // 'orders' or 'details'
-  const [selectedOrder, setSelectedOrder] = useState<{
-    id: string;
-    date: string;
-    description: string;
-    amount: string;
-    status: string;
-  } | null>(null);
+  const [currentView, setCurrentView] = useState('orders');
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const orders = [
-    {
-      id: 'ORD-2024-001',
-      date: 'Jan 15, 2024',
-      description: 'Mobile Plan Upgrade',
-      amount: '$45.00',
-      status: 'Completed'
-    },
-    {
-      id: 'ORD-2024-002',
-      date: 'Jan 15, 2024',
-      description: 'Mobile Plan Upgrade',
-      amount: '$45.00',
-      status: 'Completed'
-    },
-    {
-      id: 'ORD-2024-003',
-      date: 'Jan 15, 2024',
-      description: 'Mobile Plan Upgrade',
-      amount: '$45.00',
-      status: 'Delivered'
-    }
-  ];
+  // Fetch orders when the component mounts
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const response = await orderRequest.getMyOrders();
+        if (response) {
+					console.log(response);
+					
+          setOrders(response);
+        } else {
+          setError('No orders found.');
+        }
+      } catch (err) {
+        setError('Failed to fetch orders.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  // Adapt the Order type to match the OrderDetails component's expected structure
+  const adaptOrderForDetails = (order: Order) => ({
+    id: order.id,
+    date: order.createdAt,
+    description: "", // Use package as description
+    amount: `$${order.totalAmount}`, // Format amount as currency
+    status: order.status
+  });
 
   const getStatusBadge = (status: string) => {
     const baseClasses = 'text-xs font-medium px-3 py-1 rounded-full';
@@ -52,8 +60,8 @@ export default function MyOrders() {
     }
   };
 
-  const handleViewDetails = (order: { id: string; date: string; description: string; amount: string; status: string }) => {
-    setSelectedOrder(order);
+  const handleViewDetails = (order: Order) => {
+    setSelectedOrder(adaptOrderForDetails(order));
     setCurrentView('details');
   };
 
@@ -71,7 +79,6 @@ export default function MyOrders() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-md mx-auto bg-white min-h-screen">
-        {/* Order History */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -80,32 +87,40 @@ export default function MyOrders() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {orders.map((order, index) => (
-              <div key={index} className="border rounded-lg p-4 space-y-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium">{order.id}</p>
-                    <p className="text-sm text-gray-600">{order.date}</p>
+            {loading && <p>Loading orders...</p>}
+            {error && <p className="text-red-500">{error}</p>}
+            {!loading && !error && orders.length === 0 && (
+              <p>No orders available.</p>
+            )}
+            {!loading &&
+              orders.map((order) => (
+                <div key={order.id} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+											<div className="flex">
+												<p className="font-medium">ORD-</p>
+                      	<p className="font-medium"> {order.id}</p>
+											</div>
+                      <p className="text-sm text-gray-600">{format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm:ss')}</p>
+                    </div>
+                    <span className={getStatusBadge(order.status)}>
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    </span>
                   </div>
-                  <span className={getStatusBadge(order.status)}>
-                    {order.status}
-                  </span>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">
+                      ${order.totalAmount}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewDetails(order)}
+                    >
+                      View Details
+                    </Button>
+                  </div>
                 </div>
-
-                <p className="text-sm">{order.description}</p>
-
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">{order.amount}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleViewDetails(order)}
-                  >
-                    View Details
-                  </Button>
-                </div>
-              </div>
-            ))}
+              ))}
           </CardContent>
         </Card>
       </div>

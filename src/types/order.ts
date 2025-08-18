@@ -6,7 +6,10 @@ type OrderItem = {
 };
 
 export type Order = {
+	id: number;
+	createdAt: string;
   shippingAddress: string;
   totalAmount: number;
   order_items: OrderItem[];
+	status: string;
 };
