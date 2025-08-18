@@ -33,6 +33,7 @@ const userRequests = {
 	async getUsers(): Promise<User[] | null> {
     return await apiRequest<User[] | null>('/user', 'GET');
   }
+
 };
 
 export default userRequests;

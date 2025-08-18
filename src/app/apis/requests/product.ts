@@ -8,5 +8,8 @@ export const productRequests = {
   },
   async getProductById(productId: number): Promise<ProductResponse | null> {
     return await apiRequest<ProductResponse>(`products/${productId}`, 'GET');
+  },
+  async createProduct(data: any): Promise<any | null> {
+    return await apiRequest<any | null>('products', 'POST', data);
   }
 };
