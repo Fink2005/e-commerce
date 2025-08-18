@@ -5,9 +5,9 @@ export interface Order2 {
   id: string;
   customer: string;
   package: string;
-  amount: number;
+  totalAmount: number;
   status: 'processing' | 'completed' | 'pending';
-  date: string;
+  createdAt: string;
 }
 
 export const orderRequest = {
@@ -18,5 +18,8 @@ export const orderRequest = {
   },
   async getOrders(): Promise<Order2[] | null> {
     return await apiRequest<Order2[] | null>('/orders', 'GET');
+  },
+	async getMyOrders(): Promise<Order[] | null> {
+    return await apiRequest<Order[] | null>('/orders/my-orders', 'GET');
   },
 };
