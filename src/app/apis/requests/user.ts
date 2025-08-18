@@ -17,6 +17,13 @@ const userRequests = {
       body
     );
   },
+  async respondEnquiry(body: { resolution: string; userId: number; userIssue: string; supportId: number }): Promise<{ success: boolean } | null> {
+    return await apiRequest<{ success: boolean } | null>(
+      '/user/support/respond',
+      'POST',
+      body
+    );
+  },
   async userRanking(page: number): Promise<UserRanking | null> {
     return await apiRequest<UserRanking | null>(
       `/user/ranking?page=${page}?limit=${USER_RANKING_LIMIT}`,

@@ -22,12 +22,13 @@ import { Eye, Mail, MoreHorizontal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Enquiry {
-  id: string;
+  id: number;
   customer: string;
   subject: string;
   status: 'PENDING' | 'RESPONDED';
   date: string;
   description: string;
+  userId?: number; // Added userId for the API call
 }
 
 export function EnquiriesTable() {
@@ -36,26 +37,7 @@ export function EnquiriesTable() {
   const [respondOpen, setRespondOpen] = useState(false);
   const [responseText, setResponseText] = useState('');
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchEnquiries() {
-      setLoading(true);
-      const data = await userRequests.getAllEnquiries();
-      if (Array.isArray(data)) {
-        const mapped = data.map((item: any) => ({
-          id: item.id.toString(),
-          customer: item.users?.name || 'Unknown',
-          subject: item.issues?.replace(/_/g, ' ') || 'No Subject',
-          status: item.status || 'PENDING',
-          date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A',
-          description: item.description || 'No description provided',
-        }));
-        setEnquiries(mapped);
-      }
-      setLoading(false);
-    }
-    fetchEnquiries();
-  }, []);
+  const [responding, setResponding] = useState(false); // New state for response loading
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -77,18 +59,74 @@ export function EnquiriesTable() {
     setRespondOpen(true);
   };
 
-  const handleSendResponse = () => {
-    if (selectedEnquiry) {
-      // Update local status (no backend update assumed)
-      setEnquiries(prev =>
-        prev.map(e =>
-          e.id === selectedEnquiry.id ? { ...e, status: 'RESPONDED' } : e
-        )
-      );
+  const fetchEnquiries = async () => {
+    setLoading(true);
+    try {
+      const data = await userRequests.getAllEnquiries();
+      if (Array.isArray(data)) {
+        const mapped = data.map((item: any) => ({
+          id: item.id,
+          customer: item.users?.name || 'Unknown',
+          subject: item.issues?.replace(/_/g, ' ') || 'No Subject',
+          status: item.status || 'PENDING',
+          date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A',
+          description: item.description || 'No description provided',
+          userId: item.userId || item.users?.id, // Capture userId for API call
+        }));
+        setEnquiries(mapped);
+      }
+    } catch (error) {
+      console.error('Error fetching enquiries:', error);
+      // You might want to show a toast notification here
+    } finally {
+      setLoading(false);
     }
-    setRespondOpen(false);
-    setResponseText('');
-    setSelectedEnquiry(null);
+  };
+
+  useEffect(() => {
+    fetchEnquiries();
+  }, []);
+
+  const handleSendResponse = async () => {
+    if (
+      !selectedEnquiry
+      || !responseText.trim()
+      || typeof selectedEnquiry.userId !== 'number'
+    ) {
+      // You might want to show a validation message here
+      return;
+    }
+
+    setResponding(true);
+
+    try {
+      // Call the respondEnquiry API
+      const response = await userRequests.respondEnquiry({
+        resolution: responseText,
+        userId: selectedEnquiry.userId,
+        userIssue: selectedEnquiry.subject.replace(/\s+/g, '_'), // Convert spaces back to underscores for API
+        supportId: selectedEnquiry.id,
+      });
+
+      if (response?.success) {
+        // Close dialog and reset state
+        setRespondOpen(false);
+        setResponseText('');
+        setSelectedEnquiry(null);
+
+        // Fetch fresh data from the server
+        await fetchEnquiries();
+      } else {
+        // Handle API failure
+        console.error('Failed to send response');
+        // You might want to show an error toast notification here
+      }
+    } catch (error) {
+      console.error('Error sending response:', error);
+      // You might want to show an error toast notification here
+    } finally {
+      setResponding(false);
+    }
   };
 
   return (
@@ -144,7 +182,10 @@ export function EnquiriesTable() {
                             <Eye className="mr-2 h-4 w-4" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleRespondEnquiry(enquiry)}>
+                          <DropdownMenuItem
+                            onClick={() => handleRespondEnquiry(enquiry)}
+                            disabled={enquiry.status === 'RESPONDED'}
+                          >
                             <Mail className="mr-2 h-4 w-4" />
                             Respond
                           </DropdownMenuItem>
@@ -211,13 +252,44 @@ export function EnquiriesTable() {
           <DialogHeader>
             <DialogTitle>Respond to Enquiry</DialogTitle>
           </DialogHeader>
-          <Textarea
-            className="w-full h-32"
-            value={responseText}
-            onChange={e => setResponseText(e.target.value)}
-            placeholder="Type your response here..."
-          />
-          <Button onClick={handleSendResponse}>Send Response</Button>
+          <div className="space-y-4">
+            {selectedEnquiry && (
+              <div className="bg-gray-50 p-3 rounded">
+                <p>
+                  <strong>Subject:</strong>
+                  {' '}
+                  {selectedEnquiry.subject}
+                </p>
+                <p>
+                  <strong>Description:</strong>
+                  {' '}
+                  {selectedEnquiry.description}
+                </p>
+              </div>
+            )}
+            <Textarea
+              className="w-full h-32"
+              value={responseText}
+              onChange={e => setResponseText(e.target.value)}
+              placeholder="Type your response here..."
+              disabled={responding}
+            />
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setRespondOpen(false)}
+                disabled={responding}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSendResponse}
+                disabled={!responseText.trim() || responding}
+              >
+                {responding ? 'Sending...' : 'Send Response'}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </Card>
