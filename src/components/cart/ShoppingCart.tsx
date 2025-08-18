@@ -1,5 +1,6 @@
 'use client';
 
+import { orderRequest } from '@/app/apis/requests/order';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,16 +20,31 @@ const ShoppingCart = () => {
   const router = useRouter();
   const [couponCode, setCouponCode] = useState('');
   const [isHydrated, setIsHydrated] = useState(false);
+  const subtotal = getTotalPrice();
+  const shipping = 0;
+  const total = subtotal + shipping;
+
+  const handleOrder = async () => {
+    const dataOrder = await orderRequest.createOrder({
+      shippingAddress: '123 Main St',
+      totalAmount: total,
+      order_items: cartItems.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        totalPrice: item.price * item.quantity,
+        description: item.description
+      }))
+    });
+    localStorage.setItem('orderData', JSON.stringify(dataOrder));
+
+    router.push('/checkout');
+  };
 
   // Ensure component only renders after hydration
   useEffect(() => {
     const timer = setTimeout(() => setIsHydrated(true), 0);
     return () => clearTimeout(timer);
   }, []);
-
-  const subtotal = getTotalPrice();
-  const shipping = 0;
-  const total = subtotal + shipping;
 
   const applyCoupon = () => {
     // Add coupon logic here
@@ -177,7 +193,7 @@ const ShoppingCart = () => {
 
         <Button
           disabled={cartItems.length === 0}
-          onClick={() => router.push('/checkout')}
+          onClick={() => handleOrder()}
           className="cursor-pointer w-full mt-6 bg-red-500 hover:bg-red-600 text-white py-3 text-base font-medium"
         >
           Proceed to checkout

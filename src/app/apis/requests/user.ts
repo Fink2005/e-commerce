@@ -1,7 +1,7 @@
 import apiRequest from '@/app/apis/apiRequest';
 import { USER_RANKING_LIMIT } from '@/libs/shared/constants/globals';
 import type { VerifyKycResponse } from '@/types/auth';
-import type { UserRanking } from '@/types/user';
+import type { User, UserRanking } from '@/types/user';
 
 const userRequests = {
   async getAllEnquiries(): Promise<{ issues: string; description: string } | null> {
@@ -50,6 +50,10 @@ const userRequests = {
       body
     );
   },
+  async getUsers(): Promise<User[] | null> {
+    return await apiRequest<User[] | null>('/user', 'GET');
+  }
+
 };
 
 export default userRequests;

@@ -64,6 +64,8 @@ export function NumberFormat(number: number): string {
 
 export const isClient = typeof window !== 'undefined';
 
+export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const checkAndRefreshToken = async (param?: {
   onError?: () => void;
   onSuccess?: () => void;

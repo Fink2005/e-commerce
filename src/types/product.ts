@@ -56,7 +56,7 @@ export interface Product {
   colors?: Color[];
   sizes?: string[];
   discount: number;
-  type: 'product' | 'package';
+  type: 'product' | 'package' | 'bundle';
   packageType?: string;
   includedDevices?: Device[];
   defaultPlans?: PackagePlan[];

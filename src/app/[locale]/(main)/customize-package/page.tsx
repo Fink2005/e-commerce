@@ -1,10 +1,11 @@
 'use client';
+import { useCreateProduct } from '@/app/apis/queries/useProduction';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { ArrowLeft, Monitor, Phone, PhoneCall, ShieldCheck, Wifi } from 'lucide-react';
+import { ArrowLeft, Loader2, Monitor, Phone, PhoneCall, ShieldCheck, Wifi } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
@@ -37,6 +38,21 @@ export default function CustomizePackage() {
 
   const handleBack = () => {
     router.back();
+  };
+
+  const { mutate, isPending } = useCreateProduct();
+  const handleUpdate = async () => {
+    mutate({
+      name: 'Customized Package',
+      description: 'Your customized package with mobile and broadband data',
+      price: currentPlanCost,
+      rating: 4,
+      broadBandData: broadbandMbps,
+      mobileData: mobileDataGb,
+      isActive: true,
+      type: 'PACKAGE',
+      packageType: 'MOBILE'
+    });
   };
 
   return (
@@ -293,10 +309,9 @@ export default function CustomizePackage() {
         </Card>
       </div>
       <div className="mt-6 space-y-3 max-w-md mx-auto w-full">
-        <Button className="w-full h-12 text-base font-medium bg-red-600 hover:bg-red-700 text-white">
-          Update Package - $
-          {newTotalMonthly}
-          /month
+        <Button className="w-full h-12 text-base font-medium bg-red-600 hover:bg-red-700 text-white" onClick={handleUpdate}>
+          {isPending
+            ? <Loader2 className="animate-spin" /> : `Update Package - $${newTotalMonthly}/month`}
         </Button>
         <Button
           variant="outline"

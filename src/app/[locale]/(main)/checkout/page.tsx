@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCartStore } from '@/lib/store/cartStore';
+import { isClient } from '@/libs/utils';
+import { loadStripe } from '@stripe/stripe-js';
 import { ArrowLeft, CreditCard, MapPin, Package, Truck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -17,6 +19,36 @@ const Checkout = () => {
     getTotalItems,
     clearCart
   } = useCartStore();
+
+  const stripePromise = loadStripe('pk_test_51RwRywGkkzzoEoT5SSpKAjzbzmE13TBGl09btnvMyjwnOwnk1caW6bUuOJl9znv8UvYafB0M943mxNmLGlRoxaKh00sySvvCZW');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const orders = isClient && localStorage.getItem('orderData') ? JSON.parse(localStorage.getItem('orderData')!) : null;
+
+      const res = await fetch('/api/checkout_sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cartItems,
+          orders
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      const stripe = await stripePromise;
+      clearCart();
+      await stripe?.redirectToCheckout({ sessionId: data.id });
+    } catch (error) {
+      console.error('Order processing failed:', error);
+    }
+  };
 
   const router = useRouter();
   const [isHydrated, setIsHydrated] = useState(false);
@@ -68,27 +100,6 @@ const Checkout = () => {
       ...prev,
       [field]: value
     }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Here you would typically:
-    // 1. Validate form data
-    // 2. Process payment
-    // 3. Create order
-    // 4. Clear cart
-    // 5. Redirect to success page
-
-    try {
-      // Clear cart after successful order
-      clearCart();
-
-      // Redirect to success page
-      router.push('/order-success');
-    } catch (error) {
-      console.error('Order processing failed:', error);
-    }
   };
 
   // Show loading state until hydrated
