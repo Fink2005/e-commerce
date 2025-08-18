@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { CreditCard, Mail, MapPin, MessageCircle, Phone, Save, User, Wifi } from 'lucide-react';
+import { CreditCard, Mail, MessageCircle, Phone, Save, User, Wifi } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -162,7 +162,7 @@ export default function MyAccount({ userData: propUserData, onUpdateUser }: MyAc
       } else {
         // Use direct API call
         const response = await userRequests.updateUser(updatedData);
-        updateResult = { success: response?.success || false };
+        updateResult = { success: !!response };
       }
 
       if (updateResult.success) {
@@ -313,63 +313,6 @@ export default function MyAccount({ userData: propUserData, onUpdateUser }: MyAc
                   className="h-12 text-base"
                   disabled={saveLoading}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="flex items-center gap-2 text-sm font-medium">
-                  <Phone className="h-4 w-4" />
-                  Phone Number
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={personalInfo.phone}
-                  onChange={e => handlePersonalInfoChange('phone', e.target.value)}
-                  placeholder="Enter phone number"
-                  className="h-12 text-base"
-                  disabled={saveLoading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address" className="flex items-center gap-2 text-sm font-medium">
-                  <MapPin className="h-4 w-4" />
-                  Address
-                </Label>
-                <Textarea
-                  id="address"
-                  value={personalInfo.address}
-                  onChange={e => handlePersonalInfoChange('address', e.target.value)}
-                  placeholder="Enter full address"
-                  className="min-h-[100px] text-base resize-none"
-                  disabled={saveLoading}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city" className="text-sm font-medium">
-                    City
-                  </Label>
-                  <Input
-                    id="city"
-                    value={personalInfo.city}
-                    onChange={e => handlePersonalInfoChange('city', e.target.value)}
-                    placeholder="Enter city"
-                    className="h-12 text-base"
-                    disabled={saveLoading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="zipCode" className="text-sm font-medium">
-                    ZIP Code
-                  </Label>
-                  <Input
-                    id="zipCode"
-                    value={personalInfo.zipCode}
-                    onChange={e => handlePersonalInfoChange('zipCode', e.target.value)}
-                    placeholder="Enter ZIP code"
-                    className="h-12 text-base"
-                    disabled={saveLoading}
-                  />
-                </div>
               </div>
 
               {/* Save Error Alert */}

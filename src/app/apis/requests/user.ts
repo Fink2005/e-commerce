@@ -80,7 +80,19 @@ const userRequests = {
       };
     } | null>('/user/me', 'GET');
   },
-  async updateUser(body: object): Promise<{ success: boolean } | null> {
+  async updateUser(body: {
+    totalOrders: number;
+    email: string;
+    name: string;
+    role: string;
+    createdAt: string;
+    updatedAt: string;
+    product: {
+      broadBandData: number;
+      mobileData: number;
+      packageType: string;
+    };
+  }): Promise<{ success: boolean } | null> {
     return await apiRequest<{ success: boolean } | null>(
       '/user/me',
       'PATCH',
