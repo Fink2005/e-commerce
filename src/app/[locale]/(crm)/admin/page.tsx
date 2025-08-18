@@ -176,7 +176,7 @@ export default function CRMDashboard() {
             </TabsContent>
 
             <TabsContent value="enquiries" className="space-y-6">
-              <EnquiriesTable enquiries={recentEnquiries} />
+              <EnquiriesTable />
             </TabsContent>
 
             <TabsContent value="packages" className="space-y-6">
