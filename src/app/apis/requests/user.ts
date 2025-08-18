@@ -30,6 +30,7 @@ const userRequests = {
       'GET'
     );
   }
+
 };
 
 export default userRequests;

@@ -2,6 +2,7 @@ import { sfPro } from '@/app/fonts/sfPro';
 import RefreshToken from '@/components/refresh-token';
 import { Toaster } from '@/components/ui/sonner';
 import { routing } from '@/libs/i18nRouting';
+import TanstackProviders from '@/libs/providers/TanstackProvider';
 import '@/styles/global.css';
 import type { Metadata, Viewport } from 'next';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
@@ -60,15 +61,11 @@ export default async function RootLayout(props: {
         <div>
           <NextIntlClientProvider>
             <RefreshToken />
-            {props.children}
+            <TanstackProviders>
+              {props.children}
+            </TanstackProviders>
             <Toaster
               position="top-center"
-              toastOptions={{
-                style: {
-                  color: 'white',
-                  background: 'linear-gradient(180deg, #68DAF2 0%, #1C5BB9 95.1%)',
-                },
-              }}
             />
           </NextIntlClientProvider>
         </div>

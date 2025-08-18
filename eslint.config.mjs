@@ -80,7 +80,8 @@ export default antfu(
       'no-constant-condition': 0,
       'react-refresh/only-export-components': 'off',
       'style/comma-dangle': 'off',
-      'ts/consistent-type-definitions': 'off'
+      'ts/consistent-type-definitions': 'off',
+      'teslint-comments/no-unlimited-disable': 'off'
 
     },
   },
