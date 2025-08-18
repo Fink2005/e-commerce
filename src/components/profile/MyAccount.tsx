@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks-extra/no-direct-set-state-in-use-effect */
 'use client';
 import userRequests from '@/app/apis/requests/user';
 import { Alert, AlertDescription } from '@/components/ui/alert';

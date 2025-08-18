@@ -72,7 +72,7 @@ export default function CRMDashboard() {
 
         // Fetch customers
         const customersData = await userRequests.getUsers();
-				
+
         if (!customersData) {
           throw new Error('No users data returned from API');
         }

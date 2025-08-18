@@ -28,6 +28,9 @@ const ShoppingCart = () => {
     const dataOrder = await orderRequest.createOrder({
       shippingAddress: '123 Main St',
       totalAmount: total,
+      createdAt: new Date().toISOString(),
+      id: 1,
+      status: 'PENDING',
       order_items: cartItems.map(item => ({
         productId: item.id,
         quantity: item.quantity,

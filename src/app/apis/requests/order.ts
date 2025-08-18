@@ -19,7 +19,7 @@ export const orderRequest = {
   async getOrders(): Promise<Order2[] | null> {
     return await apiRequest<Order2[] | null>('/orders', 'GET');
   },
-	async getMyOrders(): Promise<Order[] | null> {
+  async getMyOrders(): Promise<Order[] | null> {
     return await apiRequest<Order[] | null>('/orders/my-orders', 'GET');
   },
 };

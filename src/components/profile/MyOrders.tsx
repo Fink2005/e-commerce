@@ -1,9 +1,8 @@
-/* eslint-disable react/no-array-index-key */
 'use client';
 import { orderRequest } from '@/app/apis/requests/order';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Order } from '@/types/order';
+import type { Order } from '@/types/order';
 import { format } from 'date-fns';
 import { Package } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -23,13 +22,11 @@ export default function MyOrders() {
         setLoading(true);
         const response = await orderRequest.getMyOrders();
         if (response) {
-					console.log(response);
-					
           setOrders(response);
         } else {
           setError('No orders found.');
         }
-      } catch (err) {
+      } catch {
         setError('Failed to fetch orders.');
       } finally {
         setLoading(false);
@@ -43,7 +40,7 @@ export default function MyOrders() {
   const adaptOrderForDetails = (order: Order) => ({
     id: order.id,
     date: order.createdAt,
-    description: "", // Use package as description
+    description: '', // Use package as description
     amount: `$${order.totalAmount}`, // Format amount as currency
     status: order.status
   });
@@ -92,15 +89,18 @@ export default function MyOrders() {
             {!loading && !error && orders.length === 0 && (
               <p>No orders available.</p>
             )}
-            {!loading &&
-              orders.map((order) => (
+            {!loading
+              && orders.map(order => (
                 <div key={order.id} className="border rounded-lg p-4 space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
-											<div className="flex">
-												<p className="font-medium">ORD-</p>
-                      	<p className="font-medium"> {order.id}</p>
-											</div>
+                      <div className="flex">
+                        <p className="font-medium">ORD-</p>
+                        <p className="font-medium">
+                          {' '}
+                          {order.id}
+                        </p>
+                      </div>
                       <p className="text-sm text-gray-600">{format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm:ss')}</p>
                     </div>
                     <span className={getStatusBadge(order.status)}>
@@ -109,7 +109,8 @@ export default function MyOrders() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="font-semibold">
-                      ${order.totalAmount}
+                      $
+                      {order.totalAmount}
                     </span>
                     <Button
                       variant="outline"
