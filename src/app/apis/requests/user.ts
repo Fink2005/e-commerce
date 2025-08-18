@@ -30,7 +30,7 @@ const userRequests = {
       'GET'
     );
   },
-	async getUsers(): Promise<User[] | null> {
+  async getUsers(): Promise<User[] | null> {
     return await apiRequest<User[] | null>('/user', 'GET');
   }
 

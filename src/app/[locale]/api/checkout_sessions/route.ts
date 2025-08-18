@@ -31,8 +31,8 @@ export async function POST(req: Request) {
         createdAt: orders?.createdAt.toString(),
       },
       mode: 'payment',
-      success_url: `http://localhost:3001/order-success`,
-      cancel_url: `http://localhost:3001/cart`,
+      success_url: `https://cheapdeals.vercel.app/order-success`,
+      cancel_url: `https://cheapdeals.vercel.app/cart`,
     });
 
     return NextResponse.json({ id: session.id });

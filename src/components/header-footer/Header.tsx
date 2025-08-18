@@ -13,7 +13,7 @@ const Header = () => {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   // Select getTotalItems to ensure re-render on cart changes
-  const totalItems = useCartStore((state) => state.getTotalItems());
+  const totalItems = useCartStore(state => state.getTotalItems());
 
   // Check for authentication status on mount
   useEffect(() => {

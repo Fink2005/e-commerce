@@ -1,6 +1,6 @@
 'use client';
 
-import orderRequests from '@/app/apis/requests/order';
+import { orderRequest } from '@/app/apis/requests/order';
 import userRequests from '@/app/apis/requests/user';
 import { CustomerVerificationDialog } from '@/components/admin/customer-verification-dialog';
 import { CustomersTable } from '@/components/admin/customers-table';
@@ -12,15 +12,14 @@ import { QuickActions } from '@/components/admin/quick-actions';
 import { RecentEnquiries } from '@/components/admin/recent-enquiries';
 import { StatsCards } from '@/components/admin/stats-cards';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { Order } from '@/types/order';
 import { useEffect, useState } from 'react';
 
 export default function CRMDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [showVerificationDialog, setShowVerificationDialog] = useState(false);
-  const [customers, setCustomers] = useState([]);
-  const [orders, setOrders] = useState<Order[]>([]); // Use Order type
+  const [customers, setCustomers] = useState<any>([]);
+  const [orders, setOrders] = useState<any>([]); // Use Order type
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null); // Specify error type
 
@@ -76,22 +75,21 @@ export default function CRMDashboard() {
         if (!customersData) {
           throw new Error('No users data returned from API');
         }
-				
-				setStats((prevStats) => ({
+
+        setStats(prevStats => ({
           ...prevStats,
-          totalCustomers: customersData.users.length, // Set totalCustomers to the length of users
+          totalCustomers: customersData.length, // Set totalCustomers to the length of users array
         }));
-        setCustomers(customersData.users);
+        setCustomers(customersData);
         // Fetch orders
-        const ordersData = await orderRequests.getOrders();
-				
+        const ordersData = await orderRequest.getOrders();
+
         if (!ordersData) {
           throw new Error('No orders data returned from API');
         }
         setOrders(ordersData);
-      } catch (err) {
-        console.error(err);
-        setError(err.message || 'Failed to fetch data');
+      } catch {
+        setError('Failed to fetch data');
       } finally {
         setLoading(false);
       }
@@ -134,7 +132,12 @@ export default function CRMDashboard() {
 
       <div className="p-6">
         {loading && <p>Loading data...</p>}
-        {error && <p className="text-red-600">Error: {error}</p>}
+        {error && (
+          <p className="text-red-600">
+            Error:
+            {error}
+          </p>
+        )}
         {!loading && !error && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-5 bg-white border border-gray-200">
@@ -181,7 +184,7 @@ export default function CRMDashboard() {
             </TabsContent>
 
             <TabsContent value="orders" className="space-y-6">
-              <OrdersTable orders={orders} customers={customers} packages={packages} />
+              <OrdersTable orders={orders as any} customers={customers} packages={packages} />
             </TabsContent>
           </Tabs>
         )}

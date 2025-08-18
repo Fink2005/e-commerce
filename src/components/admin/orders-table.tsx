@@ -11,6 +11,7 @@ import { OrderProcessingDialog } from './order-processing-dialog';
 
 interface Order {
   id: string;
+  users: any;
   customer: string;
   package: string;
   totalAmount: number;
@@ -62,7 +63,7 @@ export function OrdersTable({ orders, customers, packages }: OrdersTableProps) {
             {orders.map(order => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell>{order.users.name}</TableCell>
+                <TableCell>{(order.users as any).name}</TableCell>
                 <TableCell>
                   $
                   {order.totalAmount}

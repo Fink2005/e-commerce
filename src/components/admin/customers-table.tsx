@@ -13,7 +13,7 @@ interface Customer {
   phone: string;
   orders: number;
   isEmailConfirmed: boolean;
-	totalOrders: number;
+  totalOrders: number;
 }
 
 interface CustomersTableProps {
