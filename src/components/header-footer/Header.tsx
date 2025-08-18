@@ -64,7 +64,7 @@ const Header = () => {
           {totalItems > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -bottom-2 rounded-full -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              className="absolute -top-0 rounded-full -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
             >
               {totalItems}
             </Badge>
