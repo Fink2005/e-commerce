@@ -15,7 +15,7 @@ export const useCreateProduct = () => {
       if (!response) {
         throw new Error('Failed to create product');
       }
-      return response;
+      // return response;
     },
     onError: (error) => {
       if (error instanceof ApiException) {
