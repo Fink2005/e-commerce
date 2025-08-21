@@ -57,7 +57,7 @@ export default function CustomizePackage() {
       onSuccess: () => {
         toast.success('Package updated successfully!');
       },
-      onError: (error) => {
+      onError: () => {
         toast.error('Failed to update package. Please try again.');
       }
     });
