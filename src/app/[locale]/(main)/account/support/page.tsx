@@ -2,6 +2,7 @@
 import type React from 'react';
 import { useState } from 'react';
 
+import userRequests from '@/app/apis/requests/user';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,16 +53,26 @@ export default function SupportPage() {
     setEnquirySuccess(false);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setEnquirySuccess(true);
-      setEnquiry({
-        issues: '',
-        description: '',
+      // Call the actual API instead of mock timeout
+      const response = await userRequests.postEnquiry({
+        issues: enquiry.issues,
+        description: enquiry.description.trim()
       });
-      setTimeout(() => {
-        setEnquirySuccess(false);
-      }, 5000);
-    } catch {
+
+      if (response && response.success) {
+        setEnquirySuccess(true);
+        setEnquiry({
+          issues: '',
+          description: '',
+        });
+        setTimeout(() => {
+          setEnquirySuccess(false);
+        }, 5000);
+      } else {
+        setEnquiryError('Failed to submit enquiry. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting enquiry:', error);
       setEnquiryError('An error occurred while submitting your enquiry. Please try again later.');
     } finally {
       setEnquiryLoading(false);
