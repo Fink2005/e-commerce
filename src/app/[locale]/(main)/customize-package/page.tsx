@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { ArrowLeft, Loader2, Monitor, Phone, PhoneCall, ShieldCheck, Wifi } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function CustomizePackage() {
   const router = useRouter();
@@ -52,6 +53,13 @@ export default function CustomizePackage() {
       isActive: true,
       type: 'PACKAGE',
       packageType: 'MOBILE'
+    }, {
+      onSuccess: () => {
+        toast.success('Package updated successfully!');
+      },
+      onError: (error) => {
+        toast.error('Failed to update package. Please try again.');
+      }
     });
   };
 
