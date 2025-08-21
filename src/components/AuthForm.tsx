@@ -16,6 +16,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import useUserStore from '@/lib/store/userStore';
 import Eye from '@/utils/icons/Eye';
 import EyeOff from '@/utils/icons/EyeOff';
 import GoogleIcon from '@/utils/icons/GoogleIcon';
@@ -38,6 +39,9 @@ const AuthForm = ({ mode }: AuthFormProps) => {
   const router = useRouter();
   const isLogin = mode === 'login';
   const isRegister = mode === 'register';
+
+  // Get the fetchUser function from your user store
+  const { fetchUser } = useUserStore();
 
   const validationSchema = getValidationSchema(mode);
 
@@ -107,6 +111,15 @@ const AuthForm = ({ mode }: AuthFormProps) => {
 
         if (response) {
           toast.success('Welcome back!');
+
+          // Fetch user data and update the store after successful login
+          try {
+            await fetchUser();
+          } catch (fetchError) {
+            console.error('Failed to fetch user data:', fetchError);
+            // Don't prevent redirect if user fetch fails, but log the error
+            toast.warning('Login successful, but failed to load user profile. Please refresh the page.');
+          }
 
           router.push('/');
         } else {
