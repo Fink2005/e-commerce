@@ -12,9 +12,9 @@ const isProtectedRoute = (pathname: string): boolean => {
     || pathname.startsWith('/profile');
 };
 
-const isAdminRoute = (pathname: string): boolean => {
-  return pathname.startsWith('/admin');
-};
+// const isAdminRoute = (pathname: string): boolean => {
+//   return pathname.startsWith('/admin');
+// };
 
 const isAuthPage = (pathname: string): boolean => {
   return pathname.startsWith('/login')
@@ -113,19 +113,19 @@ export default async function middleware(request: NextRequest) {
     }
   }
 
-  if (isAdminRoute(pathname)) {
-    // Admin routes require authentication and admin role
-    if (!isAuthenticated) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathnameAndSearchParams);
-      return NextResponse.redirect(loginUrl);
-    }
+  // if (isAdminRoute(pathname)) {
+  //   // Admin routes require authentication and admin role
+  //   if (!isAuthenticated) {
+  //     const loginUrl = new URL('/login', request.url);
+  //     loginUrl.searchParams.set('redirect', pathnameAndSearchParams);
+  //     return NextResponse.redirect(loginUrl);
+  //   }
 
-    if (userRole !== 'ADMIN') {
-      const homeUrl = new URL('/', request.url);
-      return NextResponse.redirect(homeUrl);
-    }
-  }
+  //   if (userRole !== 'ADMIN') {
+  //     const homeUrl = new URL('/', request.url);
+  //     return NextResponse.redirect(homeUrl);
+  //   }
+  // }
 
   // Redirect authenticated users away from auth pages (but respect redirect parameter)
   if (isAuthPage(pathname) && isAuthenticated) {
